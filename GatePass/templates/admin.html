@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Admin: Data Setup</h2>
+
+<section>
+  <h3>Add Student</h3>
+  <form method="post" action="/admin/add_student">
+    <label>Student ID: <input name="student_id"></label>
+    <label>Name: <input name="name"></label>
+    <button type="submit">Add Student & Generate QR</button>
+  </form>
+</section>
+
+<section>
+  <h3>Add Vehicle</h3>
+  <form method="post" action="/admin/add_vehicle">
+    <label>License Plate: <input name="license_plate"></label>
+    <label>Student ID (optional): <input name="student_id_for_vehicle"></label>
+    <button type="submit">Add Vehicle</button>
+  </form>
+</section>
+
+<section>
+  <h3>Add Asset</h3>
+  <form method="post" action="/admin/add_asset">
+    <label>Serial Number: <input name="serial"></label>
+    <label>Type: <input name="type" value="Laptop"></label>
+    <label>Student ID (optional): <input name="student_id_for_asset"></label>
+    <button type="submit">Add Asset</button>
+  </form>
+</section>
+
+<section>
+  <h3>Students</h3>
+  <ul>
+  {% for s in students %}
+    <li>{{ s.StudentID }} - {{ s.Name }} - <a href="/static/qrcodes/{{ s.StudentID }}.png" target="_blank">QR</a></li>
+  {% else %}
+    <li>No students</li>
+  {% endfor %}
+  </ul>
+</section>
+
+<section>
+  <h3>Vehicles</h3>
+  <ul>
+  {% for v in vehicles %}
+    <li>{{ v.LicensePlate }} - Registered to: {{ v.StudentID or '---' }}</li>
+  {% else %}
+    <li>No vehicles</li>
+  {% endfor %}
+  </ul>
+</section>
+
+<section>
+  <h3>Assets</h3>
+  <ul>
+  {% for a in assets %}
+    <li>{{ a.Type }}: {{ a.SerialNumber }} - Registered to: {{ a.StudentID or '---' }}</li>
+  {% else %}
+    <li>No assets</li>
+  {% endfor %}
+  </ul>
+</section>
+
+{% endblock %}

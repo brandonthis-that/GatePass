@@ -1,0 +1,7 @@
+Flask>=2.0
+qrcode>=7.3
+Pillow>=9.0
+# Note: heavy native packages like OpenCV, pyzbar, and OpenALPR are omitted from this lightweight
+# requirements file because they often require system libraries and slow downloads. The app
+# supports a fallback mode that uses client-side QR decoding (jsQR) and a simulate-plate input
+# so the prototype runs with only these pure-Python packages.

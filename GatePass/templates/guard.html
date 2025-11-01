@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Guard Dashboard</h2>
+
+<div class="grid">
+  <div class="card">
+    <h3>Vehicle Verification (Simulated)</h3>
+    <p>Lightweight mode: enter plate to simulate ANPR recognition.</p>
+    <div id="anpr-status" class="status">No events yet</div>
+    <form id="simulate-form">
+      <label>Simulate Plate: <input id="simulate-plate" name="plate"></label>
+      <button type="submit">Simulate</button>
+    </form>
+  </div>
+
+  <div class="card">
+    <h3>Scan Student ID (QR)</h3>
+    <video id="qr-video" autoplay playsinline style="width:100%; max-width:320px; border:1px solid #ccc;"></video>
+    <div style="margin-top:8px">
+      <button id="start-scan">Start Scanning</button>
+      <button id="stop-scan">Stop</button>
+    </div>
+    <div id="qr-result" class="status">No student scanned</div>
+  </div>
+</div>
+
+<!-- jsQR (client-side QR decoder) from CDN -->
+<script src="https://unpkg.com/jsqr/dist/jsQR.js"></script>
+<script src="/static/js/guard.js"></script>
+
+{% endblock %}
