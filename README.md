@@ -1,52 +1,22 @@
-# GatePass Prototype
+# GatePass Prototype (root)
 
-Automated Vehicle, Student, and Asset Verification System (prototype).
+This workspace contains the GatePass prototype (Flask-based) in the `GatePass/` folder.
 
-Overview
-- Flask-based prototype demonstrating integration of: ANPR (OpenALPR), QR-based student verification (pyzbar), and asset lookup with logging.
-
-Quick start (linux)
-
-1. Create a virtualenv and install requirements:
-
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-```
-
-2. Optional: install OpenALPR and Python bindings if you want real ANPR. If not installed, the app provides a "Simulate Plate" input for testing.
-
-3. Run the app:
-
-```bash
-export FLASK_APP=app.py
-flask run --host=0.0.0.0
-```
-
-4. Open the guard dashboard: http://localhost:5000/guard
-   Admin pages: http://localhost:5000/admin
-
-Notes
-- The app uses SQLite at `data/gatepass.db`.
-- QR codes are generated into `static/qrcodes/`.
-- If OpenALPR isn't available, use the "Simulate Plate" box on the Guard page to emulate ANPR matches.
-
-Click-and-play quickstart
-
-If you want the fastest way to run the prototype with minimal typing, use the included runner script from the `GatePass` folder. It creates a virtualenv, installs the minimal requirements, and starts the app:
+Quick start (fast):
 
 ```bash
 cd GatePass
+chmod +x run.sh
 ./run.sh
 ```
 
-This avoids the Flask CLI and system packages and is intended for fast local prototyping.
+The `run.sh` script will create a virtualenv, install the minimal Python requirements, and start the app on http://127.0.0.1:5000
 
-Security and scope
-- This is a prototype. No authentication beyond a simple password configured in `app.py` (default: "admin").
-- No integration with external university systems.
+Short recommendation on backends for prototypes:
 
-Next steps
-- Add real OpenALPR integration if you have system packages available.
-- Improve UI and error handling.
+- Keep using Flask for Python-friendly prototyping. It's lightweight and fine for this prototype.
+- If you prefer a JavaScript stack, a minimal Node/Express server with the same static templates is equally quick to set up and may be slightly faster to start if you already have Node installed. For purely client-side prototypes (no server logic beyond static files and mocked API), you can serve the `templates` and `static` folders with any static server and keep the QR and simulate features working by adjusting fetch endpoints to local mocks.
+
+See `GatePass/README.md` for more details about the prototype.
+
+# Project
