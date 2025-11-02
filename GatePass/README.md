@@ -32,6 +32,17 @@ Notes
 - QR codes are generated into `static/qrcodes/`.
 - If OpenALPR isn't available, use the "Simulate Plate" box on the Guard page to emulate ANPR matches.
 
+Click-and-play quickstart
+
+If you want the fastest way to run the prototype with minimal typing, use the included runner script from the `GatePass` folder. It creates a virtualenv, installs the minimal requirements, and starts the app:
+
+```bash
+cd GatePass
+./run.sh
+```
+
+This avoids the Flask CLI and system packages and is intended for fast local prototyping.
+
 Security and scope
 - This is a prototype. No authentication beyond a simple password configured in `app.py` (default: "admin").
 - No integration with external university systems.

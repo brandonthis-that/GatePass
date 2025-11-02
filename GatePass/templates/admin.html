@@ -4,28 +4,28 @@
 
 <section>
   <h3>Add Student</h3>
-  <form method="post" action="/admin/add_student">
-    <label>Student ID: <input name="student_id"></label>
-    <label>Name: <input name="name"></label>
-    <button type="submit">Add Student & Generate QR</button>
+  <form method="post" action="/admin/add_student" style="display:flex; gap:8px; align-items:center">
+    <input name="student_id" placeholder="Student ID">
+    <input name="name" placeholder="Name">
+    <button type="submit">Add & Generate QR</button>
   </form>
 </section>
 
-<section>
+<section style="margin-top:12px">
   <h3>Add Vehicle</h3>
-  <form method="post" action="/admin/add_vehicle">
-    <label>License Plate: <input name="license_plate"></label>
-    <label>Student ID (optional): <input name="student_id_for_vehicle"></label>
+  <form method="post" action="/admin/add_vehicle" style="display:flex; gap:8px; align-items:center">
+    <input name="license_plate" placeholder="License Plate">
+    <input name="student_id_for_vehicle" placeholder="Student ID (optional)">
     <button type="submit">Add Vehicle</button>
   </form>
 </section>
 
-<section>
+<section style="margin-top:12px">
   <h3>Add Asset</h3>
-  <form method="post" action="/admin/add_asset">
-    <label>Serial Number: <input name="serial"></label>
-    <label>Type: <input name="type" value="Laptop"></label>
-    <label>Student ID (optional): <input name="student_id_for_asset"></label>
+  <form method="post" action="/admin/add_asset" style="display:flex; gap:8px; align-items:center">
+    <input name="serial" placeholder="Serial Number">
+    <input name="type" value="Laptop" placeholder="Type">
+    <input name="student_id_for_asset" placeholder="Student ID (optional)">
     <button type="submit">Add Asset</button>
   </form>
 </section>
