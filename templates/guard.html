@@ -6,6 +6,14 @@
   <div class="card">
     <h3>Vehicle Verification (Simulated)</h3>
     <p class="muted">Lightweight mode: enter plate to simulate ANPR recognition.</p>
+    <label style="display:block; margin-top:8px">Guard:
+      <select id="guard-select" style="margin-left:8px">
+        <option value="">(select guard)</option>
+        {% for g in guards %}
+        <option value="{{ g.GuardID }}">{{ g.Name }} ({{ g.GuardID }})</option>
+        {% endfor %}
+      </select>
+    </label>
     <div id="anpr-status" class="status">No events yet</div>
     <form id="simulate-form" style="margin-top:10px; display:flex; gap:8px; align-items:center">
       <input id="simulate-plate" name="plate" placeholder="e.g. ABC123" style="flex:1">
@@ -14,13 +22,13 @@
   </div>
 
   <div class="card">
-    <h3>Scan Student ID (QR)</h3>
+    <h3>Scan Student ID or Asset (QR)</h3>
     <video id="qr-video" autoplay playsinline style="width:100%; max-width:320px; border-radius:8px; background:#000;"></video>
     <div style="margin-top:10px; display:flex; gap:8px">
       <button id="start-scan">Start</button>
       <button id="stop-scan">Stop</button>
     </div>
-    <div id="qr-result" class="status">No student scanned</div>
+    <div id="qr-result" class="status">No code scanned</div>
   </div>
 </div>
 

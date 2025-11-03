@@ -2,31 +2,50 @@
 {% block content %}
 <h2>Admin: Data Setup</h2>
 
-<section>
-  <h3>Add Student</h3>
-  <form method="post" action="/admin/add_student" style="display:flex; gap:8px; align-items:center">
-    <input name="student_id" placeholder="Student ID">
-    <input name="name" placeholder="Name">
-    <button type="submit">Add & Generate QR</button>
-  </form>
-</section>
+<div class="grid">
+  <div class="card">
+    <h3>Add Student</h3>
+    <form method="post" action="/admin/add_student" style="display:flex; gap:8px; align-items:center">
+      <input name="student_id" placeholder="Student ID">
+      <input name="name" placeholder="Name">
+      <button type="submit">Add & Generate QR</button>
+    </form>
+  </div>
 
-<section style="margin-top:12px">
-  <h3>Add Vehicle</h3>
-  <form method="post" action="/admin/add_vehicle" style="display:flex; gap:8px; align-items:center">
-    <input name="license_plate" placeholder="License Plate">
-    <input name="student_id_for_vehicle" placeholder="Student ID (optional)">
-    <button type="submit">Add Vehicle</button>
-  </form>
-</section>
+  <div class="card">
+    <h3>Add Vehicle</h3>
+    <form method="post" action="/admin/add_vehicle" style="display:flex; gap:8px; align-items:center">
+      <input name="license_plate" placeholder="License Plate">
+      <input name="student_id_for_vehicle" placeholder="Student ID (optional)">
+      <button type="submit">Add Vehicle</button>
+    </form>
+  </div>
 
-<section style="margin-top:12px">
-  <h3>Add Asset</h3>
-  <form method="post" action="/admin/add_asset" style="display:flex; gap:8px; align-items:center">
-    <input name="serial" placeholder="Serial Number">
-    <input name="type" value="Laptop" placeholder="Type">
-    <input name="student_id_for_asset" placeholder="Student ID (optional)">
-    <button type="submit">Add Asset</button>
+  <div class="card">
+    <h3>Add Asset</h3>
+    <form method="post" action="/admin/add_asset" style="display:flex; gap:8px; align-items:center">
+      <input name="serial" placeholder="Serial Number">
+      <input name="type" value="Laptop" placeholder="Type">
+      <input name="student_id_for_asset" placeholder="Student ID (optional)">
+      <button type="submit">Add Asset</button>
+    </form>
+  </div>
+  <div class="card">
+    <h3>Add Guard (Admin only)</h3>
+    <form method="post" action="/admin/add_guard" style="display:flex; gap:8px; align-items:center">
+      <input name="guard_id" placeholder="Guard ID (e.g. G1)">
+      <input name="guard_name" placeholder="Name">
+      <button type="submit">Create Guard</button>
+    </form>
+  </div>
+</div>
+
+<section style="margin-top:18px">
+  <h3>Add Guard (Admin only)</h3>
+  <form method="post" action="/admin/add_guard" style="display:flex; gap:8px; align-items:center">
+    <input name="guard_id" placeholder="Guard ID (e.g. G1)">
+    <input name="guard_name" placeholder="Name">
+    <button type="submit">Create Guard</button>
   </form>
 </section>
 
@@ -56,9 +75,20 @@
   <h3>Assets</h3>
   <ul>
   {% for a in assets %}
-    <li>{{ a.Type }}: {{ a.SerialNumber }} - Registered to: {{ a.StudentID or '---' }}</li>
+    <li>{{ a.Type }}: {{ a.SerialNumber }} - Registered to: {{ a.StudentID or '---' }} - <a href="/static/qrcodes/asset_{{ a.SerialNumber }}.png" target="_blank">QR</a></li>
   {% else %}
     <li>No assets</li>
+  {% endfor %}
+  </ul>
+</section>
+
+<section style="margin-top:18px">
+  <h3>Guards</h3>
+  <ul>
+  {% for g in guards %}
+    <li>{{ g.GuardID }} - {{ g.Name }}</li>
+  {% else %}
+    <li>No guards</li>
   {% endfor %}
   </ul>
 </section>

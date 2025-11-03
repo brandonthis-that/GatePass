@@ -3,12 +3,15 @@ document.addEventListener('DOMContentLoaded', function(){
   const statusEl = document.getElementById('anpr-status');
   const simulateForm = document.getElementById('simulate-form');
   const simulateInput = document.getElementById('simulate-plate');
+  const guardSelect = document.getElementById('guard-select');
 
   simulateForm.addEventListener('submit', async function(e){
     e.preventDefault();
     const plate = simulateInput.value.trim();
     if(!plate) return;
-    await fetch('/simulate_plate', {method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'}, body:`plate=${encodeURIComponent(plate)}`});
+  const guard_id = guardSelect ? guardSelect.value : '';
+  const body = `plate=${encodeURIComponent(plate)}` + (guard_id?`&guard_id=${encodeURIComponent(guard_id)}`:'');
+  await fetch('/simulate_plate', {method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'}, body: body});
     // reflect immediately
     statusEl.innerHTML = `<div class="granted"><strong>SIMULATED</strong><br>Plate: ${plate}</div>`;
     simulateInput.value = '';
@@ -56,16 +59,34 @@ document.addEventListener('DOMContentLoaded', function(){
       // got student id
       scanning = false;
       stopCamera();
-      qrResult.innerText = 'Decoded: ' + code.data + ' — looking up...';
-      fetch('/qr_lookup', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({student_id: code.data})})
-        .then(r=>r.json())
-        .then(j=>{
-          if(j.match){
-            qrResult.innerHTML = `<div class="granted"><strong>VALID STUDENT</strong><br>Name: ${j.student.name}<br>ID: ${j.student.id}</div>` + (j.assets.length?('<div>Registered assets:<ul>'+j.assets.map(a=>`<li>${a.Type||a.type||'Asset'}: ${a.SerialNumber||a.serialnumber||a.SerialNumber}</li>`).join('')+'</ul></div>'):'');
-          } else {
-            qrResult.innerHTML = `<div class="denied"><strong>INVALID ID</strong><br>${j.message || 'No student found.'}</div>`;
-          }
-        }).catch(e=>{ qrResult.innerText = 'Lookup failed'; console.error(e); });
+        const guard_id = guardSelect ? guardSelect.value : '';
+        const data = code.data || '';
+        // detect asset QR protocol 'ASSET:<serial>'
+        if(data.startsWith('ASSET:')){
+          const serial = data.split(':',2)[1];
+          qrResult.innerText = `Decoded Asset: ${serial} — looking up...`;
+          fetch('/asset_lookup', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({serial: serial, guard_id: guard_id})})
+            .then(r=>r.json())
+            .then(j=>{
+              if(j.match){
+                qrResult.innerHTML = `<div class="granted"><strong>ASSET FOUND</strong><br>Serial: ${j.asset.serial}<br>Type: ${j.asset.type}<br>Owner: ${j.asset.student_name || '—'}</div>`;
+              } else {
+                qrResult.innerHTML = `<div class="denied"><strong>ASSET NOT FOUND</strong><br>${j.message || ''}</div>`;
+              }
+            }).catch(e=>{ qrResult.innerText = 'Asset lookup failed'; console.error(e); });
+        } else {
+          // treat as student id
+          qrResult.innerText = 'Decoded: ' + data + ' — looking up...';
+          fetch('/qr_lookup', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({student_id: data, guard_id: guard_id})})
+            .then(r=>r.json())
+            .then(j=>{
+              if(j.match){
+                qrResult.innerHTML = `<div class="granted"><strong>VALID STUDENT</strong><br>Name: ${j.student.name}<br>ID: ${j.student.id}</div>` + (j.assets.length?('<div>Registered assets:<ul>'+j.assets.map(a=>`<li>${a.Type||a.type||'Asset'}: ${a.SerialNumber||a.serialnumber||a.SerialNumber}</li>`).join('')+'</ul></div>'):'');
+              } else {
+                qrResult.innerHTML = `<div class="denied"><strong>INVALID ID</strong><br>${j.message || 'No student found.'}</div>`;
+              }
+            }).catch(e=>{ qrResult.innerText = 'Lookup failed'; console.error(e); });
+        }
     }
   }
 
