@@ -1,96 +1,153 @@
 {% extends 'base.html' %}
 {% block content %}
-<h2>Admin: Data Setup</h2>
+<h2>Admin Dashboard</h2>
 
-<div class="grid">
-  <div class="card">
-    <h3>Add Student</h3>
-    <form method="post" action="/admin/add_student" style="display:flex; gap:8px; align-items:center">
-      <input name="student_id" placeholder="Student ID">
-      <input name="name" placeholder="Name">
-      <button type="submit">Add & Generate QR</button>
-    </form>
-  </div>
+<div class="admin-section">
+  <h3 class="section-title">Add New Records</h3>
+  <div class="grid">
+    <div class="card">
+      <h4>👤 Add Student</h4>
+      <form method="post" action="/admin/add_student" class="form-vertical">
+        <input name="student_id" placeholder="Student ID" required>
+        <input name="name" placeholder="Full Name" required>
+        <button type="submit">Add & Generate QR</button>
+      </form>
+    </div>
 
-  <div class="card">
-    <h3>Add Vehicle</h3>
-    <form method="post" action="/admin/add_vehicle" style="display:flex; gap:8px; align-items:center">
-      <input name="license_plate" placeholder="License Plate">
-      <input name="student_id_for_vehicle" placeholder="Student ID (optional)">
-      <button type="submit">Add Vehicle</button>
-    </form>
-  </div>
+    <div class="card">
+      <h4>🚗 Add Vehicle</h4>
+      <form method="post" action="/admin/add_vehicle" class="form-vertical">
+        <input name="license_plate" placeholder="License Plate" required>
+        <input name="student_id_for_vehicle" placeholder="Student ID (optional)">
+        <button type="submit">Add Vehicle</button>
+      </form>
+    </div>
 
-  <div class="card">
-    <h3>Add Asset</h3>
-    <form method="post" action="/admin/add_asset" style="display:flex; gap:8px; align-items:center">
-      <input name="serial" placeholder="Serial Number">
-      <input name="type" value="Laptop" placeholder="Type">
-      <input name="student_id_for_asset" placeholder="Student ID (optional)">
-      <button type="submit">Add Asset</button>
-    </form>
-  </div>
-  <div class="card">
-    <h3>Add Guard (Admin only)</h3>
-    <form method="post" action="/admin/add_guard" style="display:flex; gap:8px; align-items:center">
-      <input name="guard_id" placeholder="Guard ID (e.g. G1)">
-      <input name="guard_name" placeholder="Name">
-      <button type="submit">Create Guard</button>
-    </form>
+    <div class="card">
+      <h4>💻 Add Asset</h4>
+      <form method="post" action="/admin/add_asset" class="form-vertical">
+        <input name="serial" placeholder="Serial Number" required>
+        <input name="type" value="Laptop" placeholder="Type">
+        <input name="student_id_for_asset" placeholder="Student ID (optional)">
+        <button type="submit">Add Asset & Generate QR</button>
+      </form>
+    </div>
+
+    <div class="card">
+      <h4>🛡️ Add Guard</h4>
+      <form method="post" action="/admin/add_guard" class="form-vertical">
+        <input name="guard_id" placeholder="Guard ID (e.g. G001)" required>
+        <input name="guard_name" placeholder="Guard Name" required>
+        <button type="submit">Create Guard</button>
+      </form>
+    </div>
   </div>
 </div>
 
-<section style="margin-top:18px">
-  <h3>Add Guard (Admin only)</h3>
-  <form method="post" action="/admin/add_guard" style="display:flex; gap:8px; align-items:center">
-    <input name="guard_id" placeholder="Guard ID (e.g. G1)">
-    <input name="guard_name" placeholder="Name">
-    <button type="submit">Create Guard</button>
-  </form>
-</section>
+<div class="admin-section">
+  <h3 class="section-title">Database Records</h3>
+  
+  <div class="data-section">
+    <h4>👥 Students ({{ students|length }})</h4>
+    {% if students %}
+      <table>
+        <thead>
+          <tr>
+            <th>Student ID</th>
+            <th>Name</th>
+            <th>QR Code</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for s in students %}
+          <tr>
+            <td><strong>{{ s.StudentID }}</strong></td>
+            <td>{{ s.Name }}</td>
+            <td><a href="{{ url_for('static', filename='qrcodes/' + s.StudentID + '.png') }}" target="_blank" class="qr-link">View QR</a></td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p class="muted">No students registered yet.</p>
+    {% endif %}
+  </div>
 
-<section>
-  <h3>Students</h3>
-  <ul>
-  {% for s in students %}
-    <li>{{ s.StudentID }} - {{ s.Name }} - <a href="/static/qrcodes/{{ s.StudentID }}.png" target="_blank">QR</a></li>
-  {% else %}
-    <li>No students</li>
-  {% endfor %}
-  </ul>
-</section>
+  <div class="data-section">
+    <h4>🚙 Vehicles ({{ vehicles|length }})</h4>
+    {% if vehicles %}
+      <table>
+        <thead>
+          <tr>
+            <th>License Plate</th>
+            <th>Registered To</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for v in vehicles %}
+          <tr>
+            <td><strong>{{ v.LicensePlate }}</strong></td>
+            <td>{{ v.StudentID or '—' }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p class="muted">No vehicles registered yet.</p>
+    {% endif %}
+  </div>
 
-<section>
-  <h3>Vehicles</h3>
-  <ul>
-  {% for v in vehicles %}
-    <li>{{ v.LicensePlate }} - Registered to: {{ v.StudentID or '---' }}</li>
-  {% else %}
-    <li>No vehicles</li>
-  {% endfor %}
-  </ul>
-</section>
+  <div class="data-section">
+    <h4>📦 Assets ({{ assets|length }})</h4>
+    {% if assets %}
+      <table>
+        <thead>
+          <tr>
+            <th>Type</th>
+            <th>Serial Number</th>
+            <th>Registered To</th>
+            <th>QR Code</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for a in assets %}
+          <tr>
+            <td>{{ a.Type }}</td>
+            <td><strong>{{ a.SerialNumber }}</strong></td>
+            <td>{{ a.StudentID or '—' }}</td>
+            <td><a href="{{ url_for('static', filename='qrcodes/asset_' + a.SerialNumber + '.png') }}" target="_blank" class="qr-link">View QR</a></td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p class="muted">No assets registered yet.</p>
+    {% endif %}
+  </div>
 
-<section>
-  <h3>Assets</h3>
-  <ul>
-  {% for a in assets %}
-    <li>{{ a.Type }}: {{ a.SerialNumber }} - Registered to: {{ a.StudentID or '---' }} - <a href="/static/qrcodes/asset_{{ a.SerialNumber }}.png" target="_blank">QR</a></li>
-  {% else %}
-    <li>No assets</li>
-  {% endfor %}
-  </ul>
-</section>
-
-<section style="margin-top:18px">
-  <h3>Guards</h3>
-  <ul>
-  {% for g in guards %}
-    <li>{{ g.GuardID }} - {{ g.Name }}</li>
-  {% else %}
-    <li>No guards</li>
-  {% endfor %}
-  </ul>
-</section>
+  <div class="data-section">
+    <h4>🛡️ Guards ({{ guards|length }})</h4>
+    {% if guards %}
+      <table>
+        <thead>
+          <tr>
+            <th>Guard ID</th>
+            <th>Name</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for g in guards %}
+          <tr>
+            <td><strong>{{ g.GuardID }}</strong></td>
+            <td>{{ g.Name }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p class="muted">No guards registered yet.</p>
+    {% endif %}
+  </div>
+</div>
 
 {% endblock %}
