@@ -8,45 +8,48 @@ function GuardDashboard() {
     <div className="container">
       <div className="header">
         <h1>🛡️ Guard Portal</h1>
-        <div className="nav">
-          <button onClick={logout}>Logout</button>
-        </div>
+        <nav className="nav">
+          <Link to="/guard/verify" className="nav-link">Verify Asset</Link>
+          <Link to="/guard/vehicle" className="nav-link">Log Vehicle</Link>
+          <Link to="/guard/scholars" className="nav-link">Day Scholars</Link>
+          <button onClick={logout} className="btn btn-secondary">Logout</button>
+        </nav>
       </div>
 
-      <div className="card" style={{ marginBottom: '32px', background: 'linear-gradient(135deg, rgba(6, 182, 212, 0.1) 0%, rgba(5, 150, 105, 0.1) 100%)' }}>
-        <h2 style={{ marginBottom: '8px' }}>Gate Management System</h2>
-        <p style={{ color: 'var(--muted)' }}>
-          Select a function below to manage gate activities
+      <div className="card" style={{ marginBottom: 'var(--space-xl)', background: 'linear-gradient(135deg, var(--success-light) 0%, var(--accent-light) 100%)', border: '1px solid var(--success)' }}>
+        <h2>🛡️ Gate Management System</h2>
+        <p>
+          Welcome to the security portal. Select a function below to manage gate activities and maintain campus security.
         </p>
       </div>
 
       <div className="grid">
-        <Link to="/guard/verify" style={{ textDecoration: 'none' }}>
-          <div className="card" style={{ cursor: 'pointer', textAlign: 'center', padding: '40px 24px' }}>
-            <div style={{ fontSize: '64px', marginBottom: '16px' }}>📷</div>
-            <h2 style={{ marginBottom: '8px' }}>Verify Asset</h2>
-            <p style={{ color: 'var(--muted)', fontSize: '14px' }}>
-              Scan QR code to verify student assets
+        <Link to="/guard/verify" className="card-link">
+          <div className="card dashboard-card">
+            <div className="card-icon">📷</div>
+            <h3>Verify Asset</h3>
+            <p>
+              Scan QR codes to verify student assets and ensure authorized access
             </p>
           </div>
         </Link>
 
-        <Link to="/guard/vehicle" style={{ textDecoration: 'none' }}>
-          <div className="card" style={{ cursor: 'pointer', textAlign: 'center', padding: '40px 24px' }}>
-            <div style={{ fontSize: '64px', marginBottom: '16px' }}>🚗</div>
-            <h2 style={{ marginBottom: '8px' }}>Log Vehicle</h2>
-            <p style={{ color: 'var(--muted)', fontSize: '14px' }}>
-              Log vehicle entry and exit
+        <Link to="/guard/vehicle" className="card-link">
+          <div className="card dashboard-card">
+            <div className="card-icon">🚗</div>
+            <h3>Log Vehicle</h3>
+            <p>
+              Record vehicle entry and exit times for security tracking
             </p>
           </div>
         </Link>
 
-        <Link to="/guard/scholars" style={{ textDecoration: 'none' }}>
-          <div className="card" style={{ cursor: 'pointer', textAlign: 'center', padding: '40px 24px' }}>
-            <div style={{ fontSize: '64px', marginBottom: '16px' }}>👥</div>
-            <h2 style={{ marginBottom: '8px' }}>Day Scholars</h2>
-            <p style={{ color: 'var(--muted)', fontSize: '14px' }}>
-              Sign day scholars in and out
+        <Link to="/guard/scholars" className="card-link">
+          <div className="card dashboard-card">
+            <div className="card-icon">👥</div>
+            <h3>Day Scholars</h3>
+            <p>
+              Manage day scholar check-ins and check-outs
             </p>
           </div>
         </Link>

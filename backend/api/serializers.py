@@ -4,10 +4,21 @@ from core.models import StudentProfile, Asset, Vehicle, GateLog
 
 
 class UserSerializer(serializers.ModelSerializer):
+    role = serializers.SerializerMethodField()
+    
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'first_name', 'last_name']
+        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'role']
         read_only_fields = ['id']
+    
+    def get_role(self, obj):
+        if obj.groups.filter(name='Guard').exists():
+            return 'guard'
+        elif obj.groups.filter(name='Student').exists():
+            return 'student'
+        elif obj.is_staff or obj.is_superuser:
+            return 'admin'
+        return 'student'  # default to student
 
 
 class RegisterSerializer(serializers.ModelSerializer):

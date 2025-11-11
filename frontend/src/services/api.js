@@ -32,7 +32,7 @@ api.interceptors.response.use(
       
       try {
         const refreshToken = localStorage.getItem('refresh_token');
-        const response = await axios.post(`${API_URL}/auth/refresh/`, {
+        const response = await axios.post(`${API_URL}/token/refresh/`, {
           refresh: refreshToken,
         });
         
@@ -56,7 +56,7 @@ api.interceptors.response.use(
 
 export const authAPI = {
   login: (username, password) =>
-    api.post('/auth/login/', { username, password }),
+    api.post('/token/', { username, password }),
   register: (data) =>
     api.post('/auth/register/', data),
   getCurrentUser: () =>

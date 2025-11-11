@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { authAPI } from '../services/api';
 
 function Login() {
   const [isLogin, setIsLogin] = useState(true);
@@ -31,8 +32,12 @@ function Login() {
       }
 
       if (result.success) {
-        // Determine redirect based on username (guard vs student)
-        if (formData.username.includes('guard')) {
+        // Get the updated user data to determine the correct redirect
+        const userResponse = await authAPI.getCurrentUser();
+        const userData = userResponse.data;
+        
+        // Redirect based on user role
+        if (userData.role === 'guard') {
           navigate('/guard');
         } else {
           navigate('/student');
@@ -55,100 +60,99 @@ function Login() {
   };
 
   return (
-    <div className="container" style={{ maxWidth: '480px', marginTop: '80px' }}>
-      <div className="card">
-        <h1 style={{ marginBottom: '24px', textAlign: 'center' }}>
-          🎓 GatePass System
-        </h1>
-        
-        <div style={{ display: 'flex', gap: '16px', marginBottom: '24px' }}>
+    <div className="login-container">
+      <div className="login-box">
+        <h1>🎓 GatePass</h1>
+        <p>{isLogin ? 'Welcome back!' : 'Create a new account'}</p>
+
+        <div className="login-tabs">
           <button
-            className={`button ${isLogin ? '' : 'button-secondary'}`}
-            style={{ flex: 1 }}
+            className={`login-tab ${isLogin ? 'active' : ''}`}
             onClick={() => setIsLogin(true)}
           >
             Login
           </button>
           <button
-            className={`button ${!isLogin ? '' : 'button-secondary'}`}
-            style={{ flex: 1 }}
+            className={`login-tab ${!isLogin ? 'active' : ''}`}
             onClick={() => setIsLogin(false)}
           >
             Register
           </button>
         </div>
 
-        {error && <div className="alert alert-danger">{error}</div>}
+        {error && <div className="error-message">{error}</div>}
 
         <form onSubmit={handleSubmit}>
-          <input
-            className="input"
-            type="text"
-            name="username"
-            placeholder="Username"
-            value={formData.username}
-            onChange={handleChange}
-            required
-          />
+          <div className="form-group">
+            <input
+              className="form-control"
+              type="text"
+              name="username"
+              placeholder="Username"
+              value={formData.username}
+              onChange={handleChange}
+              required
+            />
+          </div>
           
-          <input
-            className="input"
-            type="password"
-            name="password"
-            placeholder="Password"
-            value={formData.password}
-            onChange={handleChange}
-            required
-          />
-
+          <div className="form-group">
+            <input
+              className="form-control"
+              type="password"
+              name="password"
+              placeholder="Password"
+              value={formData.password}
+              onChange={handleChange}
+              required
+            />
+          </div>
+          
           {!isLogin && (
             <>
-              <input
-                className="input"
-                type="email"
-                name="email"
-                placeholder="Email"
-                value={formData.email}
-                onChange={handleChange}
-              />
-              
-              <input
-                className="input"
-                type="text"
-                name="student_id_number"
-                placeholder="Student ID (e.g., S12345)"
-                value={formData.student_id_number}
-                onChange={handleChange}
-                required
-              />
-              
-              <input
-                className="input"
-                type="text"
-                name="full_name"
-                placeholder="Full Name"
-                value={formData.full_name}
-                onChange={handleChange}
-                required
-              />
+              <div className="form-group">
+                <input
+                  className="form-control"
+                  type="email"
+                  name="email"
+                  placeholder="Email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <input
+                  className="form-control"
+                  type="text"
+                  name="full_name"
+                  placeholder="Full Name"
+                  value={formData.full_name}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <input
+                  className="form-control"
+                  type="text"
+                  name="student_id_number"
+                  placeholder="Student ID Number"
+                  value={formData.student_id_number}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
             </>
           )}
-
-          <button
-            className="button"
-            type="submit"
-            style={{ width: '100%' }}
+          
+          <button 
+            className={`btn btn-primary ${loading ? 'btn-loading' : ''}`} 
+            style={{ width: '100%' }} 
             disabled={loading}
           >
-            {loading ? 'Please wait...' : isLogin ? 'Login' : 'Register'}
+            {loading ? 'Processing...' : (isLogin ? 'Login' : 'Register')}
           </button>
         </form>
-
-        <div style={{ marginTop: '24px', padding: '16px', background: 'rgba(6, 182, 212, 0.1)', borderRadius: '8px', fontSize: '13px' }}>
-          <strong>Demo Credentials:</strong><br />
-          Guard: guard1 / guard123<br />
-          Student: john_doe / student123
-        </div>
       </div>
     </div>
   );
