@@ -1,49 +1,45 @@
 import React, { useState, useEffect } from 'react';
-import {
-  Box,
-  Grid,
-  Card,
-  CardContent,
-  Typography,
-  Button,
-  IconButton,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  TablePagination,
-  Paper,
-  Chip,
-  Avatar,
-  Tabs,
-  Tab,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
+import Box from '@mui/material/Box';
+import Grid from '@mui/material/GridLegacy';
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import Typography from '@mui/material/Typography';
+import Button from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+import TextField from '@mui/material/TextField';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import TablePagination from '@mui/material/TablePagination';
+import Paper from '@mui/material/Paper';
+import Chip from '@mui/material/Chip';
+import Avatar from '@mui/material/Avatar';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
 
-} from '@mui/material';
-import {
-  Dashboard as DashboardIcon,
-  People,
-  Security,
-  DirectionsCar,
-  Laptop,
-  Add,
-  Edit,
-  Delete,
-  Download,
-  Refresh,
-  FilterList,
-  Search
-} from '@mui/icons-material';
+import DashboardIcon from '@mui/icons-material/Dashboard';
+import People from '@mui/icons-material/People';
+import Security from '@mui/icons-material/Security';
+import DirectionsCar from '@mui/icons-material/DirectionsCar';
+import Laptop from '@mui/icons-material/Laptop';
+import Add from '@mui/icons-material/Add';
+import Edit from '@mui/icons-material/Edit';
+import Delete from '@mui/icons-material/Delete';
+import Download from '@mui/icons-material/Download';
+import Refresh from '@mui/icons-material/Refresh';
+import FilterList from '@mui/icons-material/FilterList';
+import Search from '@mui/icons-material/Search';
 import { useAuth } from '../../auth/AuthContext';
 import Layout from '../../components/shared/Layout';
 import { User, GateLog, DashboardStats } from '../../types';
@@ -316,7 +312,7 @@ const AdminDashboard: React.FC = () => {
                 Add User
               </Button>
             </Box>
-            
+
             <TableContainer component={Paper}>
               <Table>
                 <TableHead>
@@ -388,7 +384,7 @@ const AdminDashboard: React.FC = () => {
                 </Button>
               </Box>
             </Box>
-            
+
             <TableContainer component={Paper}>
               <Table>
                 <TableHead>

@@ -1,5 +1,7 @@
 import React from 'react';
-import { Box, CircularProgress, Typography } from '@mui/material';
+import Box from '@mui/material/Box';
+import CircularProgress from '@mui/material/CircularProgress';
+import Typography from '@mui/material/Typography';
 
 interface LoadingProps {
   message?: string;
@@ -7,10 +9,10 @@ interface LoadingProps {
   fullScreen?: boolean;
 }
 
-export const Loading: React.FC<LoadingProps> = ({ 
-  message = "Loading...", 
+export const Loading: React.FC<LoadingProps> = ({
+  message = "Loading...",
   size = 40,
-  fullScreen = false 
+  fullScreen = false
 }) => {
   const content = (
     <Box

@@ -1,39 +1,35 @@
 import React, { useState, useEffect } from 'react';
-import {
-  Box,
-  Grid,
-  Card,
-  CardContent,
-  Typography,
-  Button,
-  TextField,
-  Alert,
-  Chip,
-  Avatar,
-  IconButton,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  List,
-  ListItem,
-  ListItemText,
-  ListItemAvatar,
-  Divider,
-  Switch,
-  FormControlLabel
-} from '@mui/material';
+import Box from '@mui/material/Box';
+import Grid from '@mui/material/GridLegacy';
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import Typography from '@mui/material/Typography';
+import Button from '@mui/material/Button';
+import TextField from '@mui/material/TextField';
+import Alert from '@mui/material/Alert';
+import Chip from '@mui/material/Chip';
+import Avatar from '@mui/material/Avatar';
+import IconButton from '@mui/material/IconButton';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
+import ListItemAvatar from '@mui/material/ListItemAvatar';
+import Divider from '@mui/material/Divider';
+import Switch from '@mui/material/Switch';
+import FormControlLabel from '@mui/material/FormControlLabel';
 import { ThemeProvider } from '@mui/material/styles';
-import {
-  QrCodeScanner,
-  DirectionsCar,
-  People,
-  CheckCircle,
-  Cancel,
-  Person,
-  Warning,
-  Refresh,
-  AccountCircle
-} from '@mui/icons-material';
+import QrCodeScanner from '@mui/icons-material/QrCodeScanner';
+import DirectionsCar from '@mui/icons-material/DirectionsCar';
+import People from '@mui/icons-material/People';
+import CheckCircle from '@mui/icons-material/CheckCircle';
+import Cancel from '@mui/icons-material/Cancel';
+import Person from '@mui/icons-material/Person';
+import Warning from '@mui/icons-material/Warning';
+import Refresh from '@mui/icons-material/Refresh';
+import AccountCircle from '@mui/icons-material/AccountCircle';
 import { useAuth } from '../../auth/AuthContext';
 import { guardTheme } from '../../components/shared/theme';
 import QRScanner from '../../components/shared/QRScanner';
@@ -85,7 +81,7 @@ const GuardInterface: React.FC = () => {
   const handleQRScan = (qrData: QRCodeData) => {
     // Mock validation - replace with API call
     const isValid = Math.random() > 0.3; // 70% success rate for demo
-    
+
     if (isValid) {
       setScanResult({
         status: 'valid',
@@ -116,7 +112,7 @@ const GuardInterface: React.FC = () => {
 
     // Mock vehicle validation
     const isRegistered = Math.random() > 0.5; // 50% chance for demo
-    
+
     const log: GateLog = {
       id: Date.now().toString(),
       type: 'vehicle_entry',
@@ -129,8 +125,8 @@ const GuardInterface: React.FC = () => {
     setRecentLogs(prev => [log, ...prev.slice(0, 9)]);
     setScanResult({
       status: isRegistered ? 'valid' : 'visitor',
-      message: isRegistered 
-        ? `Vehicle ${vehiclePlate} is registered` 
+      message: isRegistered
+        ? `Vehicle ${vehiclePlate} is registered`
         : `Vehicle ${vehiclePlate} marked as visitor`
     });
     setVehiclePlate('');
@@ -140,7 +136,7 @@ const GuardInterface: React.FC = () => {
     setDayScholars(prev => prev.map(scholar => {
       if (scholar.id === scholarId) {
         const newStatus = scholar.status === 'in' ? 'out' : 'in';
-        
+
         // Log the action
         const log: GateLog = {
           id: Date.now().toString(),
@@ -151,9 +147,9 @@ const GuardInterface: React.FC = () => {
           timestamp: new Date().toISOString(),
           notes: `${scholar.firstName} ${scholar.lastName} signed ${newStatus}`
         };
-        
+
         setRecentLogs(prev => [log, ...prev.slice(0, 9)]);
-        
+
         return { ...scholar, status: newStatus };
       }
       return scholar;
@@ -167,12 +163,12 @@ const GuardInterface: React.FC = () => {
   const StatusAlert = () => {
     if (!scanResult) return null;
 
-    const severity = scanResult.status === 'valid' ? 'success' : 
-                    scanResult.status === 'visitor' ? 'warning' : 'error';
-    
+    const severity = scanResult.status === 'valid' ? 'success' :
+      scanResult.status === 'visitor' ? 'warning' : 'error';
+
     return (
-      <Alert 
-        severity={severity} 
+      <Alert
+        severity={severity}
         sx={{ mb: 3, fontSize: '1.25rem', minHeight: 80 }}
         action={
           <IconButton color="inherit" size="large" onClick={clearScanResult}>
@@ -181,8 +177,8 @@ const GuardInterface: React.FC = () => {
         }
         icon={
           scanResult.status === 'valid' ? <CheckCircle fontSize="large" /> :
-          scanResult.status === 'visitor' ? <Warning fontSize="large" /> :
-          <Cancel fontSize="large" />
+            scanResult.status === 'visitor' ? <Warning fontSize="large" /> :
+              <Cancel fontSize="large" />
         }
       >
         <Box>
@@ -191,7 +187,7 @@ const GuardInterface: React.FC = () => {
           </Typography>
           {scanResult.user && (
             <Typography variant="body1">
-              {scanResult.user.firstName} {scanResult.user.lastName} 
+              {scanResult.user.firstName} {scanResult.user.lastName}
               {scanResult.user.studentId && ` (${scanResult.user.studentId})`}
             </Typography>
           )}
@@ -204,8 +200,8 @@ const GuardInterface: React.FC = () => {
 
   return (
     <ThemeProvider theme={theme}>
-      <Box sx={{ 
-        minHeight: '100vh', 
+      <Box sx={{
+        minHeight: '100vh',
         bgcolor: 'background.default',
         color: 'text.primary',
         p: 2
@@ -268,7 +264,7 @@ const GuardInterface: React.FC = () => {
                     Log vehicle entries and exits
                   </Typography>
                 </Box>
-                
+
                 <TextField
                   fullWidth
                   label="License Plate Number"
@@ -279,7 +275,7 @@ const GuardInterface: React.FC = () => {
                   InputLabelProps={{ style: { fontSize: '1.25rem' } }}
                   inputProps={{ style: { fontSize: '1.5rem', textAlign: 'center' } }}
                 />
-                
+
                 <Button
                   variant="contained"
                   size="large"
@@ -304,7 +300,7 @@ const GuardInterface: React.FC = () => {
                     Day Scholars ({dayScholars.filter(s => s.status === 'in').length} In)
                   </Typography>
                 </Box>
-                
+
                 <List sx={{ flexGrow: 1, overflow: 'auto' }}>
                   {dayScholars.map((scholar, index) => (
                     <React.Fragment key={scholar.id}>

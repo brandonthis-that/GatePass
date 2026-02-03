@@ -1,32 +1,28 @@
 import React, { useState, useEffect } from 'react';
-import {
-  Box,
-  Grid,
-  Card,
-  CardContent,
-  Typography,
-  Button,
-  Fab,
-  IconButton,
-  Chip,
-  Avatar,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField
-} from '@mui/material';
-import {
-  Add,
-  Laptop,
-  DirectionsCar,
-  QrCode,
-  Download,
-  Print,
-  Edit,
-  Delete,
-  Visibility
-} from '@mui/icons-material';
+import Box from '@mui/material/Box';
+import Grid from '@mui/material/GridLegacy';
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import Typography from '@mui/material/Typography';
+import Button from '@mui/material/Button';
+import Fab from '@mui/material/Fab';
+import IconButton from '@mui/material/IconButton';
+import Chip from '@mui/material/Chip';
+import Avatar from '@mui/material/Avatar';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+import TextField from '@mui/material/TextField';
+import Add from '@mui/icons-material/Add';
+import Laptop from '@mui/icons-material/Laptop';
+import DirectionsCar from '@mui/icons-material/DirectionsCar';
+import QrCode from '@mui/icons-material/QrCode';
+import Download from '@mui/icons-material/Download';
+import Print from '@mui/icons-material/Print';
+import Edit from '@mui/icons-material/Edit';
+import Delete from '@mui/icons-material/Delete';
+import Visibility from '@mui/icons-material/Visibility';
 import { useAuth } from '../../auth/AuthContext';
 import Layout from '../../components/shared/Layout';
 import { Asset, Vehicle } from '../../types';
@@ -109,23 +105,23 @@ const StudentDashboard: React.FC = () => {
               </Typography>
             </Box>
           </Box>
-          <Chip 
-            label={asset.type.toUpperCase()} 
-            color="primary" 
-            size="small" 
+          <Chip
+            label={asset.type.toUpperCase()}
+            color="primary"
+            size="small"
           />
         </Box>
-        
+
         <Box display="flex" gap={1} justifyContent="flex-end">
-          <IconButton 
-            size="small" 
+          <IconButton
+            size="small"
             onClick={() => handleViewQR('asset', asset)}
             title="View QR Code"
           >
             <QrCode />
           </IconButton>
-          <IconButton 
-            size="small" 
+          <IconButton
+            size="small"
             onClick={() => setSelectedAsset(asset)}
             title="Edit Asset"
           >
@@ -152,17 +148,17 @@ const StudentDashboard: React.FC = () => {
             </Box>
           </Box>
         </Box>
-        
+
         <Box display="flex" gap={1} justifyContent="flex-end">
-          <IconButton 
-            size="small" 
+          <IconButton
+            size="small"
             onClick={() => handleViewQR('vehicle', vehicle)}
             title="View QR Code"
           >
             <QrCode />
           </IconButton>
-          <IconButton 
-            size="small" 
+          <IconButton
+            size="small"
             onClick={() => setSelectedVehicle(vehicle)}
             title="Edit Vehicle"
           >
@@ -204,7 +200,7 @@ const StudentDashboard: React.FC = () => {
                 Add Asset
               </Button>
             </Box>
-            
+
             {assets.length === 0 ? (
               <Card sx={{ textAlign: 'center', py: 4 }}>
                 <CardContent>
@@ -242,7 +238,7 @@ const StudentDashboard: React.FC = () => {
                 Add Vehicle
               </Button>
             </Box>
-            
+
             {vehicles.length === 0 ? (
               <Card sx={{ textAlign: 'center', py: 4 }}>
                 <CardContent>
@@ -268,8 +264,8 @@ const StudentDashboard: React.FC = () => {
       </Box>
 
       {/* QR Code Dialog */}
-      <Dialog 
-        open={showQRDialog} 
+      <Dialog
+        open={showQRDialog}
         onClose={() => setShowQRDialog(false)}
         maxWidth="sm"
         fullWidth
@@ -297,10 +293,10 @@ const StudentDashboard: React.FC = () => {
               <QrCode sx={{ fontSize: 100, color: 'grey.500' }} />
             </Box>
             <Typography variant="h6" gutterBottom>
-              {qrData?.type === 'asset' 
+              {qrData ? (qrData.type === 'asset'
                 ? `${(qrData.item as Asset).brand} ${(qrData.item as Asset).model}`
                 : `${(qrData.item as Vehicle).make} ${(qrData.item as Vehicle).model}`
-              }
+              ) : ''}
             </Typography>
             <Typography variant="body2" color="text.secondary">
               Show this QR code to security for verification

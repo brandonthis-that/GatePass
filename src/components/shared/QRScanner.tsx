@@ -1,21 +1,18 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Html5Qrcode } from 'html5-qrcode';
-import {
-  Box,
-  Button,
-  Card,
-  CardContent,
-  Typography,
-  Alert,
-  IconButton
-} from '@mui/material';
-import {
-  QrCode,
-  Close,
-  CameraAlt,
-  FlashOn,
-  FlashOff
-} from '@mui/icons-material';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import Typography from '@mui/material/Typography';
+import Alert from '@mui/material/Alert';
+import IconButton from '@mui/material/IconButton';
+
+import QrCode from '@mui/icons-material/QrCode';
+import Close from '@mui/icons-material/Close';
+import CameraAlt from '@mui/icons-material/CameraAlt';
+import FlashOn from '@mui/icons-material/FlashOn';
+import FlashOff from '@mui/icons-material/FlashOff';
 import { QRCodeData } from '../../types';
 
 interface QRScannerProps {
@@ -57,14 +54,14 @@ export const QRScanner: React.FC<QRScannerProps> = ({
       // Get available cameras
       const devices = await Html5Qrcode.getCameras();
       setCameras(devices);
-      
+
       // Prefer back camera for better scanning
-      const backCamera = devices.find(device => 
-        device.label.toLowerCase().includes('back') || 
+      const backCamera = devices.find(device =>
+        device.label.toLowerCase().includes('back') ||
         device.label.toLowerCase().includes('rear')
       );
       const cameraId = backCamera ? backCamera.id : devices[0]?.id;
-      
+
       if (!cameraId) {
         setError('No camera found');
         return;
@@ -142,7 +139,7 @@ export const QRScanner: React.FC<QRScannerProps> = ({
       const currentIndex = cameras.findIndex(cam => cam.id === selectedCamera);
       const nextIndex = (currentIndex + 1) % cameras.length;
       const nextCamera = cameras[nextIndex];
-      
+
       await stopScanner();
       startScanning(nextCamera.id);
       setSelectedCamera(nextCamera.id);
@@ -215,7 +212,7 @@ export const QRScanner: React.FC<QRScannerProps> = ({
                 Switch Camera
               </Button>
             )}
-            
+
             <Button
               variant="outlined"
               onClick={toggleFlash}

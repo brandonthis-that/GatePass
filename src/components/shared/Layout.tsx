@@ -1,24 +1,20 @@
 import React from 'react';
-import {
-  AppBar,
-  Toolbar,
-  Typography,
-  IconButton,
-  Menu,
-  MenuItem,
-  Box,
-  Avatar,
-  Container
-} from '@mui/material';
-import {
-  AccountCircle,
-  Logout,
-  Dashboard,
-  Security,
-  DirectionsCar,
-  Laptop,
-  People
-} from '@mui/icons-material';
+import AppBar from '@mui/material/AppBar';
+import Toolbar from '@mui/material/Toolbar';
+import Typography from '@mui/material/Typography';
+import IconButton from '@mui/material/IconButton';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import Box from '@mui/material/Box';
+import Avatar from '@mui/material/Avatar';
+import Container from '@mui/material/Container';
+import AccountCircle from '@mui/icons-material/AccountCircle';
+import Logout from '@mui/icons-material/Logout';
+import Dashboard from '@mui/icons-material/Dashboard';
+import Security from '@mui/icons-material/Security';
+import DirectionsCar from '@mui/icons-material/DirectionsCar';
+import Laptop from '@mui/icons-material/Laptop';
+import People from '@mui/icons-material/People';
 import { useNavigate } from 'react-router-dom';
 import { User } from '../../types';
 
@@ -29,11 +25,11 @@ interface LayoutProps {
   showNavigation?: boolean;
 }
 
-export const Layout: React.FC<LayoutProps> = ({ 
-  children, 
-  user, 
-  title = "GatePass", 
-  showNavigation = true 
+export const Layout: React.FC<LayoutProps> = ({
+  children,
+  user,
+  title = "GatePass",
+  showNavigation = true
 }) => {
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
@@ -115,16 +111,16 @@ export const Layout: React.FC<LayoutProps> = ({
     <Box sx={{ flexGrow: 1, minHeight: '100vh', backgroundColor: 'background.default' }}>
       <AppBar position="static">
         <Toolbar>
-          <Typography 
-            variant="h6" 
-            component="div" 
+          <Typography
+            variant="h6"
+            component="div"
             sx={{ flexGrow: 0, mr: 3, fontWeight: 600 }}
             onClick={() => navigate('/')}
             style={{ cursor: 'pointer' }}
           >
             {title}
           </Typography>
-          
+
           {showNavigation && user && (
             <Box sx={{ flexGrow: 1, display: 'flex', justifyContent: 'center' }}>
               {getRoleBasedNavigation()}
@@ -142,8 +138,8 @@ export const Layout: React.FC<LayoutProps> = ({
                 color="inherit"
                 sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
               >
-                <Avatar 
-                  src={user.photo} 
+                <Avatar
+                  src={user.photo}
                   sx={{ width: 32, height: 32 }}
                 >
                   <AccountCircle />
@@ -180,7 +176,7 @@ export const Layout: React.FC<LayoutProps> = ({
           )}
         </Toolbar>
       </AppBar>
-      
+
       <Container maxWidth={false} sx={{ mt: 3, mb: 3 }}>
         {children}
       </Container>

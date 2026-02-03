@@ -1,24 +1,20 @@
 import React, { useState } from 'react';
-import {
-  Box,
-  Card,
-  CardContent,
-  TextField,
-  Button,
-  Typography,
-  Alert,
-  Container,
-  Avatar,
-  InputAdornment,
-  IconButton
-} from '@mui/material';
-import {
-  Security,
-  Visibility,
-  VisibilityOff,
-  Email,
-  Lock
-} from '@mui/icons-material';
+import Box from '@mui/material/Box';
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import TextField from '@mui/material/TextField';
+import Button from '@mui/material/Button';
+import Typography from '@mui/material/Typography';
+import Alert from '@mui/material/Alert';
+import Container from '@mui/material/Container';
+import Avatar from '@mui/material/Avatar';
+import InputAdornment from '@mui/material/InputAdornment';
+import IconButton from '@mui/material/IconButton';
+import Security from '@mui/icons-material/Security';
+import Visibility from '@mui/icons-material/Visibility';
+import VisibilityOff from '@mui/icons-material/VisibilityOff';
+import Email from '@mui/icons-material/Email';
+import Lock from '@mui/icons-material/Lock';
 import { useAuth } from '../../auth/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Loading from '../../components/shared/Loading';
@@ -43,7 +39,7 @@ const LoginPage: React.FC = () => {
         guard: '/guard',
         admin: '/admin'
       };
-      
+
       const from = (location.state as any)?.from?.pathname || redirectPaths[user.role];
       navigate(from, { replace: true });
     }
@@ -84,9 +80,9 @@ const LoginPage: React.FC = () => {
       }}
     >
       <Container maxWidth="sm">
-        <Card 
+        <Card
           elevation={24}
-          sx={{ 
+          sx={{
             borderRadius: 3,
             overflow: 'visible'
           }}
@@ -110,27 +106,27 @@ const LoginPage: React.FC = () => {
               >
                 <Security fontSize="large" />
               </Avatar>
-              
-              <Typography 
-                variant="h4" 
-                component="h1" 
+
+              <Typography
+                variant="h4"
+                component="h1"
                 fontWeight={600}
                 color="text.primary"
                 gutterBottom
               >
                 GatePass
               </Typography>
-              
-              <Typography 
-                variant="subtitle1" 
+
+              <Typography
+                variant="subtitle1"
                 color="text.secondary"
                 textAlign="center"
               >
                 Africa Nazarene University
               </Typography>
-              
-              <Typography 
-                variant="body2" 
+
+              <Typography
+                variant="body2"
                 color="text.secondary"
                 textAlign="center"
                 sx={{ mb: 2 }}
@@ -202,7 +198,7 @@ const LoginPage: React.FC = () => {
                 variant="contained"
                 size="large"
                 disabled={isLoading || !email || !password}
-                sx={{ 
+                sx={{
                   mb: 2,
                   py: 1.5,
                   fontSize: '1.1rem',
@@ -212,9 +208,9 @@ const LoginPage: React.FC = () => {
                 {isLoading ? 'Signing In...' : 'Sign In'}
               </Button>
 
-              <Typography 
-                variant="body2" 
-                color="text.secondary" 
+              <Typography
+                variant="body2"
+                color="text.secondary"
                 textAlign="center"
                 sx={{ mt: 2 }}
               >
@@ -224,9 +220,9 @@ const LoginPage: React.FC = () => {
           </CardContent>
         </Card>
 
-        <Typography 
-          variant="caption" 
-          color="rgba(255, 255, 255, 0.8)" 
+        <Typography
+          variant="caption"
+          color="rgba(255, 255, 255, 0.8)"
           textAlign="center"
           sx={{ mt: 3, display: 'block' }}
         >
