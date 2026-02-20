@@ -26,6 +26,7 @@ import Visibility from '@mui/icons-material/Visibility';
 import { useAuth } from '../../auth/AuthContext';
 import Layout from '../../components/shared/Layout';
 import { Asset, Vehicle } from '../../types';
+import GateApiService from '../../services/GateApiService';
 
 const StudentDashboard: React.FC = () => {
   const { user } = useAuth();
@@ -38,41 +39,29 @@ const StudentDashboard: React.FC = () => {
   const [showQRDialog, setShowQRDialog] = useState(false);
   const [qrData, setQrData] = useState<{ type: 'asset' | 'vehicle'; item: Asset | Vehicle } | null>(null);
 
-  // Mock data - replace with API calls
+  // Load real assets and vehicles from API
   useEffect(() => {
-    // Mock assets
-    setAssets([
-      {
-        id: '1',
-        userId: user?.id || '',
-        type: 'laptop',
-        serialNumber: 'HP123456789',
-        model: 'HP EliteBook 840',
-        brand: 'HP',
-        description: 'Work laptop',
-        qrCode: 'QR_ASSET_1',
-        isActive: true,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      }
-    ]);
+    const loadData = async () => {
+      try {
+        // Load assets
+        const assetsResponse = await GateApiService.getAssets();
+        if (assetsResponse.success && assetsResponse.data) {
+          setAssets(assetsResponse.data);
+        }
 
-    // Mock vehicles
-    setVehicles([
-      {
-        id: '1',
-        userId: user?.id || '',
-        plateNumber: 'KDA 123A',
-        make: 'Toyota',
-        model: 'Corolla',
-        color: 'Silver',
-        year: 2020,
-        qrCode: 'QR_VEHICLE_1',
-        isActive: true,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        // Load vehicles
+        const vehiclesResponse = await GateApiService.getVehicles();
+        if (vehiclesResponse.success && vehiclesResponse.data) {
+          setVehicles(vehiclesResponse.data);
+        }
+      } catch (error) {
+        console.error('Failed to load data:', error);
       }
-    ]);
+    };
+
+    if (user) {
+      loadData();
+    }
   }, [user]);
 
   const handleViewQR = (type: 'asset' | 'vehicle', item: Asset | Vehicle) => {
@@ -101,12 +90,12 @@ const StudentDashboard: React.FC = () => {
             <Box>
               <Typography variant="h6">{asset.brand} {asset.model}</Typography>
               <Typography variant="body2" color="text.secondary">
-                Serial: {asset.serialNumber}
+                Serial: {asset.serial_number}
               </Typography>
             </Box>
           </Box>
           <Chip
-            label={asset.type.toUpperCase()}
+            label={asset.asset_type.toUpperCase()}
             color="primary"
             size="small"
           />
@@ -143,7 +132,7 @@ const StudentDashboard: React.FC = () => {
             <Box>
               <Typography variant="h6">{vehicle.make} {vehicle.model}</Typography>
               <Typography variant="body2" color="text.secondary">
-                {vehicle.plateNumber} • {vehicle.color} • {vehicle.year}
+                {vehicle.plate_number} • {vehicle.color} • {vehicle.year}
               </Typography>
             </Box>
           </Box>
@@ -176,7 +165,7 @@ const StudentDashboard: React.FC = () => {
         <Card sx={{ mb: 3, background: 'linear-gradient(135deg, #1976d2 0%, #1565c0 100%)', color: 'white' }}>
           <CardContent>
             <Typography variant="h4" fontWeight={600} gutterBottom>
-              Welcome back, {user?.firstName}!
+              Welcome back, {user?.first_name}!
             </Typography>
             <Typography variant="body1" sx={{ opacity: 0.9 }}>
               Manage your registered assets and vehicles. Generate QR codes for quick gate access.

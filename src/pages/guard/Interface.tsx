@@ -10,9 +10,6 @@ import Alert from '@mui/material/Alert';
 import Chip from '@mui/material/Chip';
 import Avatar from '@mui/material/Avatar';
 import IconButton from '@mui/material/IconButton';
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
@@ -29,131 +26,164 @@ import Cancel from '@mui/icons-material/Cancel';
 import Person from '@mui/icons-material/Person';
 import Warning from '@mui/icons-material/Warning';
 import Refresh from '@mui/icons-material/Refresh';
-import AccountCircle from '@mui/icons-material/AccountCircle';
 import { useAuth } from '../../auth/AuthContext';
 import { guardTheme } from '../../components/shared/theme';
 import QRScanner from '../../components/shared/QRScanner';
-import { QRCodeData, GateLog, User } from '../../types';
+import { QRCodeData, User } from '../../types';
+import GateApiService from '../../services/GateApiService';
+
+interface DayScholar extends User {
+  day_scholar_status?: {
+    status: 'in' | 'out';
+    last_check_in?: string;
+    last_check_out?: string;
+  };
+}
 
 const GuardInterface: React.FC = () => {
   const { user } = useAuth();
   const [showQRScanner, setShowQRScanner] = useState(false);
   const [vehiclePlate, setVehiclePlate] = useState('');
   const [scanResult, setScanResult] = useState<{
-    status: 'valid' | 'invalid' | 'visitor';
+    status: 'valid' | 'invalid' | 'visitor' | 'stolen';
     user?: User;
     message: string;
+    item?: any;
   } | null>(null);
-  const [dayScholars, setDayScholars] = useState<Array<User & { status: 'in' | 'out' }>>([]);
-  const [recentLogs, setRecentLogs] = useState<GateLog[]>([]);
+  const [dayScholars, setDayScholars] = useState<DayScholar[]>([]);
   const [highContrastMode, setHighContrastMode] = useState(true);
+  const [loading, setLoading] = useState(false);
 
-  // Mock day scholars data
+  // Load day scholars on component mount
   useEffect(() => {
-    setDayScholars([
-      {
-        id: '1',
-        email: 'john.doe@anu.ac.ke',
-        firstName: 'John',
-        lastName: 'Doe',
-        role: 'student',
-        studentId: '2023001',
-        isActive: true,
-        status: 'out',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      },
-      {
-        id: '2',
-        email: 'jane.smith@anu.ac.ke',
-        firstName: 'Jane',
-        lastName: 'Smith',
-        role: 'student',
-        studentId: '2023002',
-        isActive: true,
-        status: 'in',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      }
-    ]);
+    loadDayScholars();
   }, []);
 
-  const handleQRScan = (qrData: QRCodeData) => {
-    // Mock validation - replace with API call
-    const isValid = Math.random() > 0.3; // 70% success rate for demo
-
-    if (isValid) {
-      setScanResult({
-        status: 'valid',
-        user: {
-          id: qrData.userId,
-          firstName: 'John',
-          lastName: 'Doe',
-          email: 'john.doe@anu.ac.ke',
-          role: 'student',
-          studentId: '2023001',
-          photo: '/placeholder-avatar.png',
-          isActive: true,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        },
-        message: 'Asset verified successfully'
-      });
-    } else {
-      setScanResult({
-        status: 'invalid',
-        message: 'Invalid or expired QR code'
-      });
+  const loadDayScholars = async () => {
+    try {
+      const response = await GateApiService.getDayScholars();
+      if (response.success) {
+        // Transform the data to match our interface
+        const scholars = response.data.map((scholar: any) => ({
+          ...scholar.user_details,
+          day_scholar_status: {
+            status: scholar.status,
+            last_check_in: scholar.last_check_in,
+            last_check_out: scholar.last_check_out
+          }
+        }));
+        setDayScholars(scholars);
+      }
+    } catch (error) {
+      console.error('Failed to load day scholars:', error);
     }
   };
 
-  const handleVehicleEntry = () => {
-    if (!vehiclePlate.trim()) return;
-
-    // Mock vehicle validation
-    const isRegistered = Math.random() > 0.5; // 50% chance for demo
-
-    const log: GateLog = {
-      id: Date.now().toString(),
-      type: 'vehicle_entry',
-      guardId: user?.id || '',
-      status: isRegistered ? 'valid' : 'visitor',
-      timestamp: new Date().toISOString(),
-      notes: `Vehicle ${vehiclePlate} - ${isRegistered ? 'Registered' : 'Visitor'}`
-    };
-
-    setRecentLogs(prev => [log, ...prev.slice(0, 9)]);
-    setScanResult({
-      status: isRegistered ? 'valid' : 'visitor',
-      message: isRegistered
-        ? `Vehicle ${vehiclePlate} is registered`
-        : `Vehicle ${vehiclePlate} marked as visitor`
-    });
-    setVehiclePlate('');
+  const handleQRScan = async (qrData: QRCodeData) => {
+    setLoading(true);
+    try {
+      const response = await GateApiService.verifyQRCode(qrData);
+      
+      if (response.success) {
+        setScanResult({
+          status: response.data.status,
+          user: response.data.user ? {
+            id: response.data.item.user_details?.id || '',
+            first_name: response.data.item.user_details?.first_name || '',
+            last_name: response.data.item.user_details?.last_name || '',
+            email: response.data.item.user_details?.email || '',
+            role: response.data.item.user_details?.role || 'student',
+            student_id: response.data.item.user_details?.student_id,
+            is_active: response.data.item.user_details?.is_active || true,
+            created_at: response.data.item.user_details?.created_at || new Date().toISOString(),
+            updated_at: response.data.item.user_details?.updated_at || new Date().toISOString()
+          } : undefined,
+          message: response.message,
+          item: response.data.item
+        });
+      } else {
+        setScanResult({
+          status: 'invalid',
+          message: response.message || 'QR code verification failed'
+        });
+      }
+    } catch (error: any) {
+      setScanResult({
+        status: 'invalid',
+        message: error.message || 'QR code verification failed'
+      });
+    } finally {
+      setLoading(false);
+      setShowQRScanner(false);
+    }
   };
 
-  const toggleDayScholarStatus = (scholarId: string) => {
-    setDayScholars(prev => prev.map(scholar => {
-      if (scholar.id === scholarId) {
-        const newStatus = scholar.status === 'in' ? 'out' : 'in';
+  const handleVehicleEntry = async () => {
+    if (!vehiclePlate.trim()) return;
 
-        // Log the action
-        const log: GateLog = {
-          id: Date.now().toString(),
-          type: newStatus === 'in' ? 'day_scholar_in' : 'day_scholar_out',
-          userId: scholarId,
-          guardId: user?.id || '',
-          status: 'valid',
-          timestamp: new Date().toISOString(),
-          notes: `${scholar.firstName} ${scholar.lastName} signed ${newStatus}`
-        };
+    setLoading(true);
+    try {
+      const response = await GateApiService.logVehicleEntry({
+        plate_number: vehiclePlate.trim(),
+        notes: `Vehicle entry logged by guard`,
+        location: 'Main Gate'
+      });
 
-        setRecentLogs(prev => [log, ...prev.slice(0, 9)]);
-
-        return { ...scholar, status: newStatus };
+      if (response.success) {
+        setScanResult({
+          status: response.data.status,
+          message: response.message,
+          user: response.data.user ? {
+            id: response.data.vehicle?.user_details?.id || '',
+            first_name: response.data.vehicle?.user_details?.first_name || '',
+            last_name: response.data.vehicle?.user_details?.last_name || '',
+            email: response.data.vehicle?.user_details?.email || '',
+            role: response.data.vehicle?.user_details?.role || 'student',
+            is_active: true,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          } : undefined
+        });
       }
-      return scholar;
-    }));
+      
+      setVehiclePlate('');
+    } catch (error: any) {
+      setScanResult({
+        status: 'invalid',
+        message: error.message || 'Failed to log vehicle entry'
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const toggleDayScholarStatus = async (scholarId: string) => {
+    try {
+      setLoading(true);
+      const response = await GateApiService.toggleScholarStatus(scholarId);
+      
+      if (response.success) {
+        // Reload day scholars to get updated data
+        await loadDayScholars();
+        
+        // Show success message
+        const scholar = dayScholars.find(s => s.id === scholarId);
+        if (scholar) {
+          const action = response.data.status === 'in' ? 'checked in' : 'checked out';
+          setScanResult({
+            status: 'valid',
+            message: `${scholar.first_name} ${scholar.last_name} ${action} successfully`
+          });
+        }
+      }
+    } catch (error: any) {
+      setScanResult({
+        status: 'invalid',
+        message: error.message || 'Failed to update status'
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const clearScanResult = () => {
@@ -187,8 +217,15 @@ const GuardInterface: React.FC = () => {
           </Typography>
           {scanResult.user && (
             <Typography variant="body1">
-              {scanResult.user.firstName} {scanResult.user.lastName}
-              {scanResult.user.studentId && ` (${scanResult.user.studentId})`}
+              {scanResult.user.first_name} {scanResult.user.last_name}
+              {scanResult.user.student_id && ` (${scanResult.user.student_id})`}
+            </Typography>
+          )}
+          {scanResult.item && (
+            <Typography variant="body2" sx={{ mt: 1 }}>
+              {scanResult.item.serial_number && `Serial: ${scanResult.item.serial_number}`}
+              {scanResult.item.plate_number && `Plate: ${scanResult.item.plate_number}`}
+              {scanResult.item.brand && ` | ${scanResult.item.brand} ${scanResult.item.model}`}
             </Typography>
           )}
         </Box>
@@ -281,10 +318,10 @@ const GuardInterface: React.FC = () => {
                   size="large"
                   fullWidth
                   onClick={handleVehicleEntry}
-                  disabled={!vehiclePlate.trim()}
+                  disabled={!vehiclePlate.trim() || loading}
                   sx={{ fontSize: '1.25rem', py: 2 }}
                 >
-                  Log Vehicle Entry
+                  {loading ? 'Logging...' : 'Log Vehicle Entry'}
                 </Button>
               </CardContent>
             </Card>
@@ -297,7 +334,7 @@ const GuardInterface: React.FC = () => {
                 <Box sx={{ textAlign: 'center', mb: 2 }}>
                   <People sx={{ fontSize: 60, mb: 1, color: 'info.main' }} />
                   <Typography variant="h5" fontWeight={600}>
-                    Day Scholars ({dayScholars.filter(s => s.status === 'in').length} In)
+                    Day Scholars ({dayScholars.filter(s => s.day_scholar_status?.status === 'in').length} In)
                   </Typography>
                 </Box>
 
@@ -307,18 +344,19 @@ const GuardInterface: React.FC = () => {
                       <ListItem
                         secondaryAction={
                           <Button
-                            variant={scholar.status === 'in' ? 'outlined' : 'contained'}
-                            color={scholar.status === 'in' ? 'error' : 'success'}
+                            variant={scholar.day_scholar_status?.status === 'in' ? 'outlined' : 'contained'}
+                            color={scholar.day_scholar_status?.status === 'in' ? 'error' : 'success'}
                             size="large"
                             onClick={() => toggleDayScholarStatus(scholar.id)}
+                            disabled={loading}
                             sx={{ minWidth: 80, fontSize: '1.1rem' }}
                           >
-                            Sign {scholar.status === 'in' ? 'Out' : 'In'}
+                            {loading ? '...' : `Sign ${scholar.day_scholar_status?.status === 'in' ? 'Out' : 'In'}`}
                           </Button>
                         }
                       >
                         <ListItemAvatar>
-                          <Avatar sx={{ bgcolor: scholar.status === 'in' ? 'success.main' : 'grey.500' }}>
+                          <Avatar sx={{ bgcolor: scholar.day_scholar_status?.status === 'in' ? 'success.main' : 'grey.500' }}>
                             <Person />
                           </Avatar>
                         </ListItemAvatar>
@@ -326,16 +364,16 @@ const GuardInterface: React.FC = () => {
                           primary={
                             <Box display="flex" alignItems="center" gap={1}>
                               <Typography variant="body1" fontWeight={500}>
-                                {scholar.firstName} {scholar.lastName}
+                                {scholar.first_name} {scholar.last_name}
                               </Typography>
                               <Chip
-                                label={scholar.status.toUpperCase()}
-                                color={scholar.status === 'in' ? 'success' : 'default'}
+                                label={scholar.day_scholar_status?.status?.toUpperCase() || 'OUT'}
+                                color={scholar.day_scholar_status?.status === 'in' ? 'success' : 'default'}
                                 size="small"
                               />
                             </Box>
                           }
-                          secondary={scholar.studentId}
+                          secondary={scholar.student_id}
                         />
                       </ListItem>
                       {index < dayScholars.length - 1 && <Divider />}

@@ -145,7 +145,7 @@ export const Layout: React.FC<LayoutProps> = ({
                   <AccountCircle />
                 </Avatar>
                 <Typography variant="body2">
-                  {user.firstName} {user.lastName}
+                  {user.first_name} {user.last_name}
                 </Typography>
               </IconButton>
               <Menu

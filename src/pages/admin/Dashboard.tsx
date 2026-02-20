@@ -90,15 +90,15 @@ const AdminDashboard: React.FC = () => {
       {
         id: '1',
         email: 'john.doe@anu.ac.ke',
-        firstName: 'John',
-        lastName: 'Doe',
+        first_name: 'John',
+        last_name: 'Doe',
         role: 'student',
-        studentId: '2023001',
+        student_id: '2023001',
         phone: '+254712345678',
         department: 'Computer Science',
-        isActive: true,
-        createdAt: '2024-01-15T10:30:00Z',
-        updatedAt: '2024-02-01T14:20:00Z'
+        is_active: true,
+        created_at: '2024-01-15T10:30:00Z',
+        updated_at: '2024-02-01T14:20:00Z'
       },
       {
         id: '2',

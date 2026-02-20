@@ -10,6 +10,7 @@ import LoginPage from './pages/auth/LoginPage';
 import StudentDashboard from './pages/student/Dashboard';
 import GuardInterface from './pages/guard/Interface';
 import AdminDashboard from './pages/admin/Dashboard';
+import DemoPage from './pages/DemoPage';
 
 // Protected Route component
 import { ProtectedRoute } from './components/shared/ProtectedRoute';
@@ -22,6 +23,7 @@ function App() {
         <Router>
           <Routes>
             {/* Public routes */}
+            <Route path="/demo" element={<DemoPage />} />
             <Route path="/login" element={<LoginPage />} />
 
             {/* Protected routes */}
@@ -53,8 +55,8 @@ function App() {
             />
 
             {/* Default redirect */}
-            <Route path="/" element={<Navigate to="/login" replace />} />
-            <Route path="*" element={<Navigate to="/login" replace />} />
+            <Route path="/" element={<Navigate to="/demo" replace />} />
+            <Route path="*" element={<Navigate to="/demo" replace />} />
           </Routes>
         </Router>
       </AuthProvider>

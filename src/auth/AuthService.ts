@@ -54,13 +54,24 @@ export interface RegisterData {
 export class AuthService {
   static async login(credentials: LoginCredentials): Promise<{ user: User; token: string }> {
     try {
-      const response = await api.post<APIResponse<{ user: User; token: string }>>('/auth/login', credentials);
+      const response = await api.post<APIResponse<{ user: User; token: string }>>('/auth/login/', credentials);
       const { user, token } = response.data.data;
-      
+
       localStorage.setItem('gatepass_token', token);
       return { user, token };
     } catch (error: any) {
-      throw new Error(error.response?.data?.message || 'Login failed');
+      // Handle specific error responses
+      if (error.response?.status === 400) {
+        throw new Error(error.response.data?.message || 'Invalid email or password');
+      } else if (error.response?.status === 401) {
+        throw new Error('Invalid email or password');
+      } else if (error.response?.status >= 500) {
+        throw new Error('Server error. Please try again later.');
+      } else if (error.code === 'ECONNREFUSED' || error.message?.includes('Network Error')) {
+        throw new Error('Cannot connect to server. Please check if the backend is running.');
+      } else {
+        throw new Error(error.response?.data?.message || error.message || 'Login failed');
+      }
     }
   }
 
@@ -68,7 +79,7 @@ export class AuthService {
     try {
       const response = await api.post<APIResponse<{ user: User; token: string }>>('/auth/register', data);
       const { user, token } = response.data.data;
-      
+
       localStorage.setItem('gatepass_token', token);
       return { user, token };
     } catch (error: any) {
@@ -78,7 +89,7 @@ export class AuthService {
 
   static async logout(): Promise<void> {
     try {
-      await api.post('/auth/logout');
+      await api.post('/auth/logout/');
     } catch (error) {
       console.error('Logout API call failed:', error);
     } finally {
@@ -88,9 +99,14 @@ export class AuthService {
 
   static async getCurrentUser(): Promise<User> {
     try {
-      const response = await api.get<APIResponse<User>>('/auth/me');
+      const response = await api.get<APIResponse<User>>('/auth/me/');
       return response.data.data;
     } catch (error: any) {
+      if (error.response?.status === 401) {
+        // Token is invalid, redirect to login
+        localStorage.removeItem('gatepass_token');
+        throw new Error('Session expired. Please log in again.');
+      }
       throw new Error(error.response?.data?.message || 'Failed to get current user');
     }
   }
@@ -99,7 +115,7 @@ export class AuthService {
     try {
       const response = await api.post<APIResponse<{ token: string }>>('/auth/refresh');
       const { token } = response.data.data;
-      
+
       localStorage.setItem('gatepass_token', token);
       return token;
     } catch (error: any) {

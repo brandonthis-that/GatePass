@@ -1,14 +1,35 @@
 export interface User {
   id: string;
   email: string;
+  first_name: string;
+  last_name: string;
+  role: 'student' | 'staff' | 'guard' | 'admin';
+  student_id?: string;
+  staff_id?: string;
+  phone?: string;
+  department?: string;
+  photo?: string;  
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+  
+  // Computed fields from backend
+  full_name?: string;
+  identifier?: string;
+}
+
+// Legacy interface for backward compatibility
+export interface UserLegacy {
+  id: string;
+  email: string;
   firstName: string;
   lastName: string;
   role: 'student' | 'staff' | 'guard' | 'admin';
   studentId?: string;
   staffId?: string;
-  photo?: string;
   phone?: string;
   department?: string;
+  photo?: string;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -16,41 +37,41 @@ export interface User {
 
 export interface Asset {
   id: string;
-  userId: string;
+  user_id: string;
   type: 'laptop' | 'phone' | 'tablet' | 'other';
-  serialNumber: string;
+  serial_number: string;
   model: string;
   brand: string;
   description?: string;
-  qrCode: string;
+  qr_code: string;
   photo?: string;
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface Vehicle {
   id: string;
-  userId: string;
-  plateNumber: string;
+  user_id: string;
+  plate_number: string;
   make: string;
   model: string;
   color: string;
   year?: number;
-  qrCode: string;
+  qr_code: string;
   photo?: string;
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface GateLog {
   id: string;
   type: 'asset_verification' | 'vehicle_entry' | 'vehicle_exit' | 'day_scholar_in' | 'day_scholar_out';
-  userId?: string;
-  assetId?: string;
-  vehicleId?: string;
-  guardId: string;
+  user_id?: string;
+  asset_id?: string;
+  vehicle_id?: string;
+  guard_id: string;
   status: 'valid' | 'invalid' | 'visitor';
   timestamp: string;
   notes?: string;
@@ -60,7 +81,7 @@ export interface GateLog {
 export interface QRCodeData {
   type: 'asset' | 'vehicle';
   id: string;
-  userId: string;
+  user_id: string;
   timestamp: string;
   hash: string;
 }
