@@ -1,4 +1,5 @@
-from rest_framework import generics, status, viewsets
+from gate_logs.models import GateLog
+from rest_framework import generics, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -46,6 +47,11 @@ class DayScholarViewSet(viewsets.ReadOnlyModelViewSet):
         scholar = self.get_object()
         scholar.day_scholar_status = "ON_CAMPUS"
         scholar.save(update_fields=["day_scholar_status"])
+        GateLog.objects.create(
+            guard=request.user,
+            log_type="SCHOLAR_IN",
+            student=scholar,
+        )
         return Response(
             {"status": "ON_CAMPUS", "student": UserProfileSerializer(scholar).data}
         )
@@ -55,6 +61,11 @@ class DayScholarViewSet(viewsets.ReadOnlyModelViewSet):
         scholar = self.get_object()
         scholar.day_scholar_status = "OFF_CAMPUS"
         scholar.save(update_fields=["day_scholar_status"])
+        GateLog.objects.create(
+            guard=request.user,
+            log_type="SCHOLAR_OUT",
+            student=scholar,
+        )
         return Response(
             {"status": "OFF_CAMPUS", "student": UserProfileSerializer(scholar).data}
         )

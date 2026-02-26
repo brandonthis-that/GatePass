@@ -27,5 +27,5 @@ class Asset(models.Model):
     def _generate_qr(self):
         qr = qrcode.make(str(self.qr_token))
         buffer = BytesIO()
-        qr.save(buffer, format("PNG"))
+        qr.save(buffer, "PNG")
         self.qr_code.save(f"asset_{self.qr_token}.png", File(buffer), save=False)

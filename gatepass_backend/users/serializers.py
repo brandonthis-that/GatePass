@@ -20,8 +20,11 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
             "photo",
             "is_day_scholar",
         ]
+        read_only_fields = ["role"]
 
     def create(self, validated_data):
+        # Force role to student unless set explicitly by admin logic
+        validated_data.setdefault("role", "student")
         password = validated_data.pop("password")
         user = User(**validated_data)
         user.set_password(password)
