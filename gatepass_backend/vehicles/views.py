@@ -18,8 +18,8 @@ class VehicleViewSet(viewsets.ModelViewSet):
 
     def get_permissions(self):
         if self.action == "lookup":
-            return [IsGuard() | IsAdmin()]
-        return [IsStudent() | IsGuard() | IsAdmin()]
+            return [(IsGuard | IsAdmin)()]
+        return [(IsStudent | IsGuard | IsAdmin)()]
 
     def get_queryset(self):
         user = self.request.user

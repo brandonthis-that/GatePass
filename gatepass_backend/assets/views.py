@@ -13,7 +13,7 @@ class AssetViewSet(viewsets.ModelViewSet):
 
     def get_permissions(self):
         if self.action == "verify_by_token":
-            return [IsGuard() | IsAdmin()]
+            return [(IsGuard | IsAdmin)()]
         return [IsAuthenticated()]
 
     def get_queryset(self):

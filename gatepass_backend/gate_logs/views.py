@@ -23,7 +23,7 @@ class GateLogViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         if self.action == "reports":
             return [IsAdmin()]
-        return [IsGuard() | IsAdmin()]
+        return [(IsGuard | IsAdmin)()]
 
     def get_queryset(self):
         user = self.request.user
