@@ -1,7 +1,7 @@
 import React, { useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
-import { ScanLine, Car, Users, LogOut, User as UserIcon } from 'lucide-react';
+import { ScanLine, Car, Users, LogOut, User as UserIcon, UserPlus, Shield } from 'lucide-react';
 
 const GuardDashboard = () => {
     const { user, logout } = useContext(AuthContext);
@@ -71,6 +71,32 @@ const GuardDashboard = () => {
                     </div>
                     <div className="w-16 h-16 bg-zinc-700/50 rounded-2xl flex items-center justify-center">
                         <Users className="w-8 h-8 text-amber-400" />
+                    </div>
+                </Link>
+
+                <Link
+                    to="/guard/visitor/new"
+                    className="w-full flex items-center justify-between bg-purple-600 hover:bg-purple-500 text-white p-6 rounded-3xl shadow-lg shadow-purple-900/50 transition-all active:scale-95 border border-purple-400/30"
+                >
+                    <div>
+                        <h2 className="text-2xl font-bold mb-1">New Visitor</h2>
+                        <p className="text-purple-200 text-sm">Register visitor entry</p>
+                    </div>
+                    <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm">
+                        <UserPlus className="w-8 h-8" />
+                    </div>
+                </Link>
+
+                <Link
+                    to="/guard/visitors"
+                    className="w-full flex items-center justify-between bg-indigo-600 hover:bg-indigo-500 text-white p-6 rounded-3xl shadow-lg shadow-indigo-900/50 transition-all active:scale-95 border border-indigo-400/30"
+                >
+                    <div>
+                        <h2 className="text-2xl font-bold mb-1">Visitor Management</h2>
+                        <p className="text-indigo-200 text-sm">Approve & track visitors</p>
+                    </div>
+                    <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm">
+                        <Shield className="w-8 h-8" />
                     </div>
                 </Link>
 

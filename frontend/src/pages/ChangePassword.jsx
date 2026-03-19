@@ -32,8 +32,21 @@ const ChangePassword = () => {
             });
 
             setSuccess(true);
+            
+            // Refresh user profile to get updated must_change_password status
+            try {
+                const profileResponse = await api.get('/api/users/me/');
+                // Update the user context if you have a way to do it
+                // For now, we'll just redirect after success
+            } catch (refreshError) {
+                console.warn('Could not refresh user profile:', refreshError);
+            }
+            
             setTimeout(() => {
-                const dest = user.role === 'student' ? '/student' : '/guard';
+                let dest;
+                if (user.role === 'student') dest = '/student';
+                else if (user.role === 'admin') dest = '/admin';
+                else dest = '/guard';
                 navigate(dest, { replace: true });
             }, 2000);
         } catch (err) {

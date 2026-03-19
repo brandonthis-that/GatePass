@@ -19,11 +19,14 @@ const Login = () => {
         try {
             const user = await login(username, password);
 
-            // Enforce change password on first login (password == student_id)
-            if (user.role === 'student' && password === user.student_id) {
+            // Enforce change password on first login (backend flag)
+            if (user.must_change_password) {
                 navigate('/change-password', { replace: true });
             } else {
-                const dest = user.role === 'student' ? '/student' : '/guard';
+                let dest;
+                if (user.role === 'student') dest = '/student';
+                else if (user.role === 'admin') dest = '/admin';
+                else dest = '/guard';
                 navigate(dest, { replace: true });
             }
         } catch (err) {

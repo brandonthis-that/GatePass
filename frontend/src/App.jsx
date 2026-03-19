@@ -18,6 +18,12 @@ import AssetVerify from './pages/guard/AssetVerify';
 import VehicleLogger from './pages/guard/VehicleLogger';
 import DayScholars from './pages/guard/DayScholars';
 import VisitorForm from './pages/guard/VisitorForm';
+import VisitorManagement from './pages/guard/VisitorManagement';
+
+// Admin Pages
+import AdminDashboard from './pages/admin/Dashboard';
+import AdminUsers from './pages/admin/Users';
+import AdminReports from './pages/admin/Reports';
 
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
@@ -34,7 +40,8 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
   if (allowedRoles && !allowedRoles.includes(user.role)) {
     // Redirect based on role if they hit the wrong route
     if (user.role === 'student') return <Navigate to="/student" replace />;
-    if (user.role === 'guard' || user.role === 'admin') return <Navigate to="/guard" replace />;
+    if (user.role === 'admin') return <Navigate to="/admin" replace />;
+    if (user.role === 'guard') return <Navigate to="/guard" replace />;
   }
 
   return children;
@@ -46,7 +53,9 @@ function AppRoutes() {
 
   return (
     <Routes>
-      <Route path="/login" element={user ? <Navigate to={`/${user.role === 'student' ? 'student' : 'guard'}`} /> : <Login />} />
+      <Route path="/login" element={
+        user ? <Navigate to={`/${user.role === 'student' ? 'student' : user.role === 'admin' ? 'admin' : 'guard'}`} /> : <Login />
+      } />
       <Route path="/change-password" element={<ProtectedRoute><ChangePassword /></ProtectedRoute>} />
 
       {/* Student Routes */}
@@ -61,6 +70,12 @@ function AppRoutes() {
       <Route path="/guard/vehicle" element={<ProtectedRoute allowedRoles={['guard', 'admin']}><VehicleLogger /></ProtectedRoute>} />
       <Route path="/guard/scholars" element={<ProtectedRoute allowedRoles={['guard', 'admin']}><DayScholars /></ProtectedRoute>} />
       <Route path="/guard/visitor/new" element={<ProtectedRoute allowedRoles={['guard', 'admin']}><VisitorForm /></ProtectedRoute>} />
+      <Route path="/guard/visitors" element={<ProtectedRoute allowedRoles={['guard', 'admin']}><VisitorManagement /></ProtectedRoute>} />
+
+      {/* Admin Routes */}
+      <Route path="/admin" element={<ProtectedRoute allowedRoles={['admin']}><AdminDashboard /></ProtectedRoute>} />
+      <Route path="/admin/users" element={<ProtectedRoute allowedRoles={['admin']}><AdminUsers /></ProtectedRoute>} />
+      <Route path="/admin/reports" element={<ProtectedRoute allowedRoles={['admin']}><AdminReports /></ProtectedRoute>} />
 
       {/* Default Fallback */}
       <Route path="*" element={<Navigate to="/login" replace />} />

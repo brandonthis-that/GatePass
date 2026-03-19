@@ -1,5 +1,5 @@
 from gate_logs.models import GateLog
-from rest_framework import generics, viewsets
+from rest_framework import generics, viewsets, status
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -7,7 +7,12 @@ from rest_framework.response import Response
 from users.permissions import IsAdmin, IsGuard
 
 from .models import User
-from .serializers import UserProfileSerializer, UserRegistrationSerializer
+from .serializers import (
+    UserProfileSerializer,
+    UserRegistrationSerializer,
+    AdminUserCreateSerializer,
+    AdminUserUpdateSerializer,
+)
 
 
 class UserRegistrationView(generics.CreateAPIView):
@@ -26,6 +31,58 @@ class UserProfileView(generics.RetrieveUpdateAPIView):
 
     def get_object(self):
         return self.request.user
+
+    def perform_update(self, serializer):
+        # If user is changing their password, clear the must_change_password flag
+        if 'password' in self.request.data:
+            password = self.request.data['password']
+            user = serializer.instance
+            user.set_password(password)
+            user.must_change_password = False
+            user.save()
+        else:
+            serializer.save()
+
+
+class AdminUserViewSet(viewsets.ModelViewSet):
+    """
+    Admin-only CRUD for all users.
+    GET    /api/users/           → list all users
+    POST   /api/users/           → create a user (any role)
+    GET    /api/users/{id}/      → retrieve a user
+    PUT    /api/users/{id}/      → full update
+    PATCH  /api/users/{id}/      → partial update
+    DELETE /api/users/{id}/      → delete a user
+    POST   /api/users/{id}/ban/  → ban a user
+    POST   /api/users/{id}/unban/→ unban a user
+    """
+
+    queryset = User.objects.all().order_by("id")
+    permission_classes = [IsAdmin]
+
+    def get_serializer_class(self):
+        if self.action == "create":
+            return AdminUserCreateSerializer
+        if self.action in ("update", "partial_update"):
+            return AdminUserUpdateSerializer
+        return UserProfileSerializer
+
+    @action(detail=True, methods=["post"])
+    def ban(self, request, pk=None):
+        user = self.get_object()
+        reason = request.data.get("ban_reason", "")
+        user.is_banned = True
+        user.ban_reason = reason
+        user.save(update_fields=["is_banned", "ban_reason"])
+        return Response({"status": "banned", "user": UserProfileSerializer(user).data})
+
+    @action(detail=True, methods=["post"])
+    def unban(self, request, pk=None):
+        user = self.get_object()
+        user.is_banned = False
+        user.ban_reason = ""
+        user.save(update_fields=["is_banned", "ban_reason"])
+        return Response({"status": "unbanned", "user": UserProfileSerializer(user).data})
 
 
 class DayScholarViewSet(viewsets.ReadOnlyModelViewSet):

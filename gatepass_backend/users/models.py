@@ -6,9 +6,15 @@ from django.db import models
 
 class User(AbstractUser):
     STUDENT = "student"
+    STAFF = "staff"
     GUARD = "guard"
     ADMIN = "admin"
-    ROLE_CHOICES = [(STUDENT, "Student"), (GUARD, "Guard"), (ADMIN, "Admin")]
+    ROLE_CHOICES = [
+        (STUDENT, "Student"),
+        (STAFF, "Staff"),
+        (GUARD, "Guard"),
+        (ADMIN, "Admin"),
+    ]
 
     role = models.CharField(max_length=10, choices=ROLE_CHOICES)
     student_id = models.CharField(max_length=20, unique=True, blank=True, null=True)
@@ -20,3 +26,6 @@ class User(AbstractUser):
         choices=[("ON_CAMPUS", "On Campus"), ("OFF_CAMPUS", "Off Campus")],
         default="OFF_CAMPUS",
     )
+    must_change_password = models.BooleanField(default=False)  # True if user has default password
+    is_banned = models.BooleanField(default=False)
+    ban_reason = models.CharField(max_length=255, blank=True)

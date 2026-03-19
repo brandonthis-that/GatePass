@@ -29,6 +29,13 @@ class Command(BaseCommand):
                 skipped += 1
                 continue
 
+            # Check if this is a default password (student_id or standard pattern)
+            is_default_password = (
+                (account["role"] == "student" and account["password"] == account.get("student_id")) or
+                (account["role"] == "guard" and account["password"].endswith("pass")) or
+                (account["role"] == "admin" and "secure" in account["password"])
+            )
+            
             to_create.append(
                 User(
                     username=account["username"],
@@ -43,6 +50,7 @@ class Command(BaseCommand):
                     password=make_password(account["password"]),
                     is_staff=account["role"] == "admin",
                     is_superuser=account["role"] == "admin",
+                    must_change_password=is_default_password,
                 )
             )
 
