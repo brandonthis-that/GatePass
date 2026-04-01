@@ -30,9 +30,19 @@ const VehicleForm = () => {
         setError(null);
 
         // Normalize plate number (uppercase, strip weird spaces)
+        const normalizedPlate = formData.plate_number.toUpperCase().trim();
+
+        // Validate Kenyan plate format: e.g. KCA 123A, KAA 000A, KCB 1234
+        const plateRegex = /^[A-Z]{2,3}\s?\d{3,4}[A-Z]?$/;
+        if (!plateRegex.test(normalizedPlate)) {
+            setError("Please enter a valid plate number (e.g. KCA 123A or KCB 1234).");
+            setLoading(false);
+            return;
+        }
+
         const normalizedData = {
             ...formData,
-            plate_number: formData.plate_number.toUpperCase().trim()
+            plate_number: normalizedPlate
         };
 
         try {
@@ -91,6 +101,8 @@ const VehicleForm = () => {
                                 type="text"
                                 name="plate_number"
                                 required
+                                minLength={6}
+                                maxLength={10}
                                 placeholder="e.g. KCA 123A"
                                 value={formData.plate_number}
                                 onChange={handleChange}
@@ -105,6 +117,8 @@ const VehicleForm = () => {
                                     type="text"
                                     name="make"
                                     required
+                                    minLength={2}
+                                    maxLength={50}
                                     placeholder="e.g. Toyota"
                                     value={formData.make}
                                     onChange={handleChange}
@@ -118,6 +132,8 @@ const VehicleForm = () => {
                                     type="text"
                                     name="model"
                                     required
+                                    minLength={2}
+                                    maxLength={50}
                                     placeholder="e.g. Fielder"
                                     value={formData.model}
                                     onChange={handleChange}
@@ -132,6 +148,8 @@ const VehicleForm = () => {
                                 type="text"
                                 name="color"
                                 required
+                                minLength={2}
+                                maxLength={30}
                                 placeholder="e.g. White"
                                 value={formData.color}
                                 onChange={handleChange}

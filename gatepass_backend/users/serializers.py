@@ -1,6 +1,33 @@
 from rest_framework import serializers
+import re
 
 from .models import User
+
+
+KENYAN_PHONE_RE = re.compile(r'^(\+254|0)[17]\d{8}$')
+
+
+def validate_username_format(value):
+    """Shared username validator: min 3 chars, allowed characters only."""
+    value = value.strip()
+    if len(value) < 3:
+        raise serializers.ValidationError("Username must be at least 3 characters.")
+    if not re.match(r'^[a-zA-Z0-9@.+\-_]+$', value):
+        raise serializers.ValidationError(
+            "Username may only contain letters, digits, and @/./+/-/_ characters."
+        )
+    return value
+
+
+def validate_phone_format(value):
+    """Optional phone: if provided must be valid Kenyan number."""
+    if value:
+        value = value.strip()
+        if not KENYAN_PHONE_RE.match(value):
+            raise serializers.ValidationError(
+                "Enter a valid Kenyan phone number (e.g. +254712345678 or 0712345678)."
+            )
+    return value
 
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
@@ -39,6 +66,12 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         user.must_change_password = is_default_password
         user.save()
         return user
+
+    def validate_username(self, value):
+        return validate_username_format(value)
+
+    def validate_phone(self, value):
+        return validate_phone_format(value)
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
@@ -93,6 +126,12 @@ class AdminUserCreateSerializer(serializers.ModelSerializer):
         user.save()
         return user
 
+    def validate_username(self, value):
+        return validate_username_format(value)
+
+    def validate_phone(self, value):
+        return validate_phone_format(value)
+
 
 class AdminUserUpdateSerializer(serializers.ModelSerializer):
     """Admin can update role, ban status, and any profile field.
@@ -128,3 +167,9 @@ class AdminUserUpdateSerializer(serializers.ModelSerializer):
             instance.set_password(password)
         instance.save()
         return instance
+
+    def validate_username(self, value):
+        return validate_username_format(value)
+
+    def validate_phone(self, value):
+        return validate_phone_format(value)

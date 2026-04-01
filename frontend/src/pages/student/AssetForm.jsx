@@ -28,8 +28,15 @@ const AssetForm = () => {
         setLoading(true);
         setError(null);
 
+        // Normalize: uppercase and trim the serial number
+        const normalizedData = {
+            ...formData,
+            serial_number: formData.serial_number.toUpperCase().trim(),
+            model_name: formData.model_name.trim(),
+        };
+
         try {
-            await api.post('/api/assets/', formData);
+            await api.post('/api/assets/', normalizedData);
             setSuccess(true);
             setTimeout(() => {
                 navigate('/student');
@@ -99,6 +106,8 @@ const AssetForm = () => {
                                 type="text"
                                 name="model_name"
                                 required
+                                minLength={2}
+                                maxLength={100}
                                 placeholder="e.g. Dell XPS 15 9500"
                                 value={formData.model_name}
                                 onChange={handleChange}
@@ -112,6 +121,8 @@ const AssetForm = () => {
                                 type="text"
                                 name="serial_number"
                                 required
+                                minLength={3}
+                                maxLength={60}
                                 placeholder="Check the bottom or back of your device"
                                 value={formData.serial_number}
                                 onChange={handleChange}

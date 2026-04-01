@@ -80,6 +80,30 @@ const UserFormModal = ({ open, onClose, onSaved, editUser }) => {
     e.preventDefault();
     setSaving(true);
     setError('');
+
+    // Client-side validation
+    if (form.username.trim().length < 3) {
+      setError('Username must be at least 3 characters.');
+      setSaving(false);
+      return;
+    }
+    const usernameRegex = /^[a-zA-Z0-9@.+\-_]+$/;
+    if (!usernameRegex.test(form.username)) {
+      setError('Username may only contain letters, digits, and @/./+/-/_ characters.');
+      setSaving(false);
+      return;
+    }
+    if (form.role === 'student' && !form.student_id.trim()) {
+      setError('Student ID is required for student accounts.');
+      setSaving(false);
+      return;
+    }
+    if (!isEditing && form.password.length < 6) {
+      setError('Password must be at least 6 characters.');
+      setSaving(false);
+      return;
+    }
+
     try {
       const payload = { ...form };
       if (isEditing && !payload.password) delete payload.password;
@@ -131,12 +155,14 @@ const UserFormModal = ({ open, onClose, onSaved, editUser }) => {
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">First Name</label>
-              <input name="first_name" value={form.first_name} onChange={handle} required
+            <input name="first_name" value={form.first_name} onChange={handle} required
+                minLength={1} maxLength={50}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm" />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
               <input name="last_name" value={form.last_name} onChange={handle} required
+                minLength={1} maxLength={50}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm" />
             </div>
           </div>
@@ -145,6 +171,9 @@ const UserFormModal = ({ open, onClose, onSaved, editUser }) => {
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Username</label>
             <input name="username" value={form.username} onChange={handle} required
+              minLength={3} maxLength={150}
+              pattern="^[a-zA-Z0-9@.+\-_]+$"
+              title="Only letters, digits, and @/./+/-/_ characters"
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm" />
           </div>
 
@@ -153,11 +182,15 @@ const UserFormModal = ({ open, onClose, onSaved, editUser }) => {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
               <input name="email" type="email" value={form.email} onChange={handle}
+                maxLength={254}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm" />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
-              <input name="phone" value={form.phone} onChange={handle}
+              <input name="phone" type="tel" value={form.phone} onChange={handle}
+                pattern="(\+254|0)[17]\d{8}"
+                title="Enter a valid Kenyan phone number (e.g. +254712345678)"
+                maxLength={15}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm" />
             </div>
           </div>
@@ -179,6 +212,10 @@ const UserFormModal = ({ open, onClose, onSaved, editUser }) => {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Student ID</label>
                 <input name="student_id" value={form.student_id} onChange={handle}
+                  required={form.role === 'student'}
+                  minLength={form.role === 'student' ? 1 : 0}
+                  maxLength={20}
+                  placeholder={form.role === 'student' ? 'Required' : ''}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white" />
               </div>
               <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700">
@@ -197,6 +234,8 @@ const UserFormModal = ({ open, onClose, onSaved, editUser }) => {
             <div className="relative">
               <input name="password" type={showPassword ? 'text' : 'password'} value={form.password} onChange={handle}
                 required={!isEditing}
+                minLength={!isEditing ? 6 : undefined}
+                maxLength={128}
                 className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm" />
               <button type="button" onClick={() => setShowPassword(p => !p)}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">

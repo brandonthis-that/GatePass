@@ -51,6 +51,29 @@ const VisitorForm = () => {
         setLoading(true);
         setError(null);
 
+        // Validate National ID — Kenyan IDs are exactly 8 digits
+        const idRegex = /^\d{8}$/;
+        if (!idRegex.test(formData.national_id.trim())) {
+            setError("National ID must be exactly 8 digits (numbers only).");
+            setLoading(false);
+            return;
+        }
+
+        // Validate visitor phone if provided
+        const phoneRegex = /^(\+254|0)[17]\d{8}$/;
+        if (formData.phone && !phoneRegex.test(formData.phone.trim())) {
+            setError("Please enter a valid Kenyan phone number (e.g. +254712345678 or 0712345678).");
+            setLoading(false);
+            return;
+        }
+
+        // Validate host phone if provided
+        if (formData.host_phone && !phoneRegex.test(formData.host_phone.trim())) {
+            setError("Please enter a valid host phone number (e.g. +254712345678 or 0712345678).");
+            setLoading(false);
+            return;
+        }
+
         try {
             // Submit visitor data
             const response = await api.post('/api/visitors/', formData);
@@ -148,6 +171,8 @@ const VisitorForm = () => {
                                         type="text"
                                         name="name"
                                         required
+                                        minLength={3}
+                                        maxLength={100}
                                         placeholder="e.g. Jane Wanjiku"
                                         value={formData.name}
                                         onChange={handleChange}
@@ -161,7 +186,12 @@ const VisitorForm = () => {
                                         type="text"
                                         name="national_id"
                                         required
-                                        placeholder="Required for entry"
+                                        minLength={8}
+                                        maxLength={8}
+                                        inputMode="numeric"
+                                        pattern="\d{8}"
+                                        title="National ID must be exactly 8 digits"
+                                        placeholder="Required for entry (8 digits)"
                                         value={formData.national_id}
                                         onChange={handleChange}
                                         className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-0 focus:border-blue-500 transition-colors shadow-sm bg-white font-mono"
@@ -177,6 +207,9 @@ const VisitorForm = () => {
                                         type="tel"
                                         name="phone"
                                         placeholder="e.g. +254712345678"
+                                        pattern="(\+254|0)[17]\d{8}"
+                                        title="Enter a valid Kenyan phone number"
+                                        maxLength={15}
                                         value={formData.phone}
                                         onChange={handleChange}
                                         className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-0 focus:border-blue-500 transition-colors shadow-sm bg-white"
@@ -207,6 +240,7 @@ const VisitorForm = () => {
                                         type="text"
                                         name="organization"
                                         placeholder="e.g. ABC Company Ltd"
+                                        maxLength={100}
                                         value={formData.organization}
                                         onChange={handleChange}
                                         className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-0 focus:border-blue-500 transition-colors shadow-sm bg-white"
@@ -262,6 +296,8 @@ const VisitorForm = () => {
                                         name="purpose_details"
                                         required
                                         rows={3}
+                                        minLength={10}
+                                        maxLength={500}
                                         placeholder="Brief description of the specific purpose of visit..."
                                         value={formData.purpose_details}
                                         onChange={handleChange}
@@ -284,6 +320,8 @@ const VisitorForm = () => {
                                         type="text"
                                         name="host_name"
                                         required
+                                        minLength={3}
+                                        maxLength={100}
                                         placeholder="e.g. Dr. John Doe"
                                         value={formData.host_name}
                                         onChange={handleChange}
@@ -297,6 +335,9 @@ const VisitorForm = () => {
                                         type="tel"
                                         name="host_phone"
                                         placeholder="Host contact number"
+                                        pattern="(\+254|0)[17]\d{8}"
+                                        title="Enter a valid Kenyan phone number"
+                                        maxLength={15}
                                         value={formData.host_phone}
                                         onChange={handleChange}
                                         className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-0 focus:border-blue-500 transition-colors shadow-sm bg-white"

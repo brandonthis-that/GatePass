@@ -14,10 +14,15 @@ const Login = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        const trimmedUsername = username.trim();
+        if (!trimmedUsername) {
+            setError('Please enter your username.');
+            return;
+        }
         setIsLoading(true);
         setError(null);
         try {
-            const user = await login(username, password);
+            const user = await login(trimmedUsername, password);
 
             // Enforce change password on first login (backend flag)
             if (user.must_change_password) {

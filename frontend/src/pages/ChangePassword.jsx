@@ -17,6 +17,10 @@ const ChangePassword = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if (newPassword.length < 8) {
+            setError("New password must be at least 8 characters long.");
+            return;
+        }
         if (newPassword !== confirmPassword) {
             setError("New passwords do not match.");
             return;
@@ -85,6 +89,7 @@ const ChangePassword = () => {
                         <input
                             type="password"
                             required
+                            maxLength={128}
                             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-colors shadow-sm"
                             value={oldPassword}
                             onChange={(e) => setOldPassword(e.target.value)}
@@ -96,6 +101,8 @@ const ChangePassword = () => {
                         <input
                             type="password"
                             required
+                            minLength={8}
+                            maxLength={128}
                             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-colors shadow-sm"
                             value={newPassword}
                             onChange={(e) => setNewPassword(e.target.value)}
@@ -107,6 +114,8 @@ const ChangePassword = () => {
                         <input
                             type="password"
                             required
+                            minLength={8}
+                            maxLength={128}
                             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-colors shadow-sm"
                             value={confirmPassword}
                             onChange={(e) => setConfirmPassword(e.target.value)}

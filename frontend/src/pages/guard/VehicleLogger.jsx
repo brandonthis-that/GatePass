@@ -92,6 +92,7 @@ const VehicleLogger = () => {
                     <input
                         type="text"
                         required
+                        maxLength={10}
                         placeholder="Enter Plate (e.g. KCA 123A)"
                         value={plate}
                         onChange={(e) => setPlate(e.target.value)}
