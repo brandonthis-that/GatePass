@@ -1,7 +1,7 @@
 import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
-import { LogIn } from 'lucide-react';
+import anulogo from '../assets/anulogo.svg';
 
 const Login = () => {
     const [username, setUsername] = useState('');
@@ -45,9 +45,7 @@ const Login = () => {
         <div className="flex min-h-screen items-center justify-center bg-gray-100 p-4">
             <div className="w-full max-w-md bg-white p-8 rounded-xl shadow-lg border border-gray-200">
                 <div className="flex flex-col items-center mb-8">
-                    <div className="bg-blue-600 p-4 rounded-full mb-4">
-                        <LogIn className="w-8 h-8 text-white" />
-                    </div>
+                    <img src={anulogo} alt="ANU Logo" className="w-24 h-24 object-contain mb-4" />
                     <h2 className="text-3xl font-bold text-gray-800">GatePass SignIn</h2>
                     <p className="text-gray-500 mt-2 text-center text-sm">Use your credentials to access the portal</p>
                 </div>
@@ -64,7 +62,7 @@ const Login = () => {
                         <input
                             type="text"
                             required
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors shadow-sm"
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 transition-colors shadow-sm"
                             placeholder="e.g., jdoe2024"
                             value={username}
                             onChange={(e) => setUsername(e.target.value)}
@@ -76,7 +74,7 @@ const Login = () => {
                         <input
                             type="password"
                             required
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors shadow-sm"
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 transition-colors shadow-sm"
                             placeholder="••••••••"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
@@ -86,7 +84,7 @@ const Login = () => {
                     <button
                         type="submit"
                         disabled={isLoading}
-                        className={`w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-lg font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors ${isLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
+                        className={`w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-lg font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-600 transition-colors ${isLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
                     >
                         {isLoading ? 'Signing in...' : 'Sign In'}
                     </button>
