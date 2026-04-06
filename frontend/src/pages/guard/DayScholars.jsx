@@ -16,7 +16,7 @@ const DayScholars = () => {
             setLoading(true);
             const res = await api.get('/api/day-scholars/');
             setScholars(res.data);
-        } catch (err) {
+        } catch {
             setError("Failed to load scholars. Tap to retry.");
         } finally {
             setLoading(false);

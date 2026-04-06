@@ -310,7 +310,11 @@ const BanModal = ({ open, user, onClose, onUpdated }) => {
   const [reason, setReason] = useState('');
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => { if (open) setReason(''); }, [open]);
+  useEffect(() => {
+    let t;
+    if (open) t = setTimeout(() => setReason(''), 0);
+    return () => clearTimeout(t);
+  }, [open]);
 
   const confirm = async () => {
     setSaving(true);

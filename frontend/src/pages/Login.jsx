@@ -34,7 +34,7 @@ const Login = () => {
                 else dest = '/guard';
                 navigate(dest, { replace: true });
             }
-        } catch (err) {
+        } catch {
             setError('Invalid username or password. Please try again.');
         } finally {
             setIsLoading(false);

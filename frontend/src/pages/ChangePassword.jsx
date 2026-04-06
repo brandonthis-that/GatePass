@@ -12,7 +12,7 @@ const ChangePassword = () => {
     const [success, setSuccess] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
 
-    const { user, logout } = useContext(AuthContext);
+    const { user } = useContext(AuthContext);
     const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
@@ -37,15 +37,8 @@ const ChangePassword = () => {
 
             setSuccess(true);
             
-            // Refresh user profile to get updated must_change_password status
-            try {
-                const profileResponse = await api.get('/api/users/me/');
-                // Update the user context if you have a way to do it
-                // For now, we'll just redirect after success
-            } catch (refreshError) {
-                console.warn('Could not refresh user profile:', refreshError);
-            }
-            
+            // Refresh happens automatically on next API call via token interceptor
+
             setTimeout(() => {
                 let dest;
                 if (user.role === 'student') dest = '/student';

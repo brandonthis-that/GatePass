@@ -62,7 +62,7 @@ const VehicleLogger = () => {
                 setSuccessMsg('');
             }, 2000);
 
-        } catch (err) {
+        } catch {
             setError("Failed to create gate log.");
         } finally {
             setLoading(false);
