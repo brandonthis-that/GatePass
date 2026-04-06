@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     "vehicles",
     "gate_logs",
     "visitors",
+    "django_extensions",
 ]
 
 MIDDLEWARE = [
