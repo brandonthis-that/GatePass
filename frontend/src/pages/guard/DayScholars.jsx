@@ -15,7 +15,7 @@ const DayScholars = () => {
         try {
             setLoading(true);
             const res = await api.get('/api/day-scholars/');
-            setScholars(res.data);
+            setScholars(res.data.results || res.data);
         } catch {
             setError("Failed to load scholars. Tap to retry.");
         } finally {
@@ -46,11 +46,24 @@ const DayScholars = () => {
         }
     };
 
-    const filteredScholars = scholars.filter(s =>
-        s.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        s.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        s.student_id.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const filteredScholars = scholars.filter(s => {
+        const search = searchTerm.toLowerCase();
+        return (
+            (s.first_name && s.first_name.toLowerCase().includes(search)) ||
+            (s.last_name && s.last_name.toLowerCase().includes(search)) ||
+            (s.student_id && s.student_id.toLowerCase().includes(search))
+        );
+    }).sort((a, b) => {
+        const search = searchTerm.toLowerCase();
+        if (!search) return 0;
+        
+        const aIdMatch = a.student_id && a.student_id.toLowerCase().includes(search);
+        const bIdMatch = b.student_id && b.student_id.toLowerCase().includes(search);
+        
+        if (aIdMatch && !bIdMatch) return -1;
+        if (!aIdMatch && bIdMatch) return 1;
+        return 0;
+    });
 
     return (
         <div className="min-h-screen bg-gray-50 flex flex-col items-center p-4 pb-24">

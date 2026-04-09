@@ -4,7 +4,7 @@ import re
 from .models import User
 
 
-KENYAN_PHONE_RE = re.compile(r'^(\+254|0)[17]\d{8}$')
+INTL_PHONE_RE = re.compile(r'^\+?[0-9\s\-]{6,25}$')
 
 
 def validate_username_format(value):
@@ -20,12 +20,12 @@ def validate_username_format(value):
 
 
 def validate_phone_format(value):
-    """Optional phone: if provided must be valid Kenyan number."""
+    """Optional phone: if provided must be a plausible international number."""
     if value:
         value = value.strip()
-        if not KENYAN_PHONE_RE.match(value):
+        if not INTL_PHONE_RE.match(value):
             raise serializers.ValidationError(
-                "Enter a valid Kenyan phone number (e.g. +254712345678 or 0712345678)."
+                "Enter a valid phone number (e.g. +254712345678)."
             )
     return value
 
@@ -131,6 +131,11 @@ class AdminUserCreateSerializer(serializers.ModelSerializer):
 
     def validate_phone(self, value):
         return validate_phone_format(value)
+
+    def validate(self, attrs):
+        if attrs.get('role') == 'student' and not (attrs.get('student_id') or '').strip():
+            raise serializers.ValidationError({'student_id': 'Student ID is required for student accounts.'})
+        return attrs
 
 
 class AdminUserUpdateSerializer(serializers.ModelSerializer):

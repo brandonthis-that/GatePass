@@ -20,5 +20,7 @@ class GateLogSerializer(serializers.ModelSerializer):
             "student",
             "plate_number_raw",
             "is_visitor",
+            "driver_name",
+            "declared_items",
         ]
         read_only_fields = ["timestamp", "guard"]

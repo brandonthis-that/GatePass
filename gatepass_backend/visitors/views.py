@@ -165,3 +165,21 @@ class VisitorViewSet(viewsets.ModelViewSet):
         )
         serializer = self.get_serializer(overdue, many=True)
         return Response(serializer.data)
+
+    @action(detail=False, methods=["get"], url_path="alerts")
+    def alerts(self, request):
+        """
+        Get formatted alert messages for overdue visitors
+        """
+        now = timezone.now()
+        overdue = self.get_queryset().filter(
+            expected_end_time__lt=now,
+            exit_time__isnull=True,
+            status__in=['APPROVED', 'CHECKED_IN', 'IN_MEETING']
+        )
+        alerts_list = []
+        for visitor in overdue:
+            diff = now - visitor.expected_end_time
+            minutes = int(diff.total_seconds() / 60)
+            alerts_list.append(f"Visitor {visitor.name} has exceeded their maximum duration by {minutes} minutes.")
+        return Response({"alerts": alerts_list})

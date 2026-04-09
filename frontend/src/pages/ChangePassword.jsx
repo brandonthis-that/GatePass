@@ -47,7 +47,13 @@ const ChangePassword = () => {
                 navigate(dest, { replace: true });
             }, 2000);
         } catch (err) {
-            setError(err.response?.data?.message || 'Failed to update password. Ensure old password is correct.');
+            const data = err.response?.data;
+            if (data && typeof data === 'object') {
+                const msgs = Object.values(data).flat().join(' ');
+                setError(msgs || 'Failed to update password.');
+            } else {
+                setError('Failed to update password. Please try again.');
+            }
         } finally {
             setIsLoading(false);
         }

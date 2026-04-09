@@ -18,7 +18,7 @@ class User(AbstractUser):
 
     role = models.CharField(max_length=10, choices=ROLE_CHOICES)
     student_id = models.CharField(max_length=20, unique=True, blank=True, null=True)
-    phone = models.CharField(max_length=15, blank=True)
+    phone = models.CharField(max_length=25, blank=True)
     photo = models.ImageField(upload_to="profile_photos/", blank=True, null=True)
     is_day_scholar = models.BooleanField(default=False)  # type: ignore
     day_scholar_status = models.CharField(

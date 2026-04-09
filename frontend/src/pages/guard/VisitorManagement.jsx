@@ -41,9 +41,9 @@ const VisitorManagement = () => {
         api.get('/api/visitors/overdue/')
       ]);
       
-      setVisitors(allVisitors.data);
-      setPendingVisitors(pending.data);
-      setOverdueVisitors(overdue.data);
+      setVisitors(allVisitors.data.results || allVisitors.data);
+      setPendingVisitors(pending.data.results || pending.data);
+      setOverdueVisitors(overdue.data.results || overdue.data);
     } catch (error) {
       console.error('Error fetching visitors:', error);
     } finally {

@@ -18,8 +18,8 @@ const StudentDashboard = () => {
                     api.get('/api/assets/'),
                     api.get('/api/vehicles/')
                 ]);
-                setAssets(assetsRes.data);
-                setVehicles(vehiclesRes.data);
+                setAssets(assetsRes.data.results || assetsRes.data);
+                setVehicles(vehiclesRes.data.results || vehiclesRes.data);
             } catch (err) {
                 console.error(err);
                 setError("Failed to load your dashboard data. Please refresh.");

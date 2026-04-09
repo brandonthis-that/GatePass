@@ -2,6 +2,7 @@ import React, { useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
 import { ScanLine, Car, Users, LogOut, User as UserIcon, UserPlus, Shield } from 'lucide-react';
+import AlertsWidget from '../shared/AlertsWidget';
 
 const GuardDashboard = () => {
     const { user, logout } = useContext(AuthContext);
@@ -30,6 +31,11 @@ const GuardDashboard = () => {
                 >
                     <LogOut className="w-6 h-6" />
                 </button>
+            </div>
+
+            {/* Alerts */}
+            <div className="w-full max-w-sm">
+                <AlertsWidget />
             </div>
 
             {/* Main Touch Actions */}

@@ -1,16 +1,29 @@
-import React, { useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useContext, useState, useRef, useEffect } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
-import { LogOut, User } from 'lucide-react';
+import { LogOut, User, KeyRound, ChevronDown } from 'lucide-react';
 
 const PageLayout = ({ children, title }) => {
     const { user, logout } = useContext(AuthContext);
     const navigate = useNavigate();
+    const [menuOpen, setMenuOpen] = useState(false);
+    const menuRef = useRef(null);
 
     const handleLogout = () => {
         logout();
         navigate('/login');
     };
+
+    // Close dropdown when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (e) => {
+            if (menuRef.current && !menuRef.current.contains(e.target)) {
+                setMenuOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
     return (
         <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -22,18 +35,45 @@ const PageLayout = ({ children, title }) => {
                             <span className="text-xl font-bold text-blue-600">GatePass</span>
                         </div>
 
-                        <div className="flex items-center space-x-4">
-                            <div className="flex items-center text-sm font-medium text-gray-700">
-                                <User className="w-4 h-4 mr-2" />
-                                <span className="hidden sm:inline">{user?.first_name} {user?.last_name}</span>
+                        <div className="flex items-center space-x-2">
+                            {/* User Dropdown */}
+                            <div className="relative" ref={menuRef}>
+                                <button
+                                    onClick={() => setMenuOpen(prev => !prev)}
+                                    className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                                >
+                                    <div className="w-7 h-7 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
+                                        <User className="w-4 h-4" />
+                                    </div>
+                                    <span className="hidden sm:inline">{user?.first_name} {user?.last_name}</span>
+                                    <ChevronDown className={`w-3.5 h-3.5 text-gray-400 transition-transform ${menuOpen ? 'rotate-180' : ''}`} />
+                                </button>
+
+                                {menuOpen && (
+                                    <div className="absolute right-0 mt-1 w-52 bg-white rounded-xl shadow-lg border border-gray-100 py-1 z-50">
+                                        <div className="px-4 py-2.5 border-b border-gray-100">
+                                            <p className="text-xs text-gray-400 uppercase tracking-wide font-semibold">Signed in as</p>
+                                            <p className="text-sm font-semibold text-gray-800 truncate">{user?.first_name} {user?.last_name}</p>
+                                            <p className="text-xs text-gray-500 truncate">{user?.username}</p>
+                                        </div>
+                                        <Link
+                                            to="/change-password"
+                                            onClick={() => setMenuOpen(false)}
+                                            className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                                        >
+                                            <KeyRound className="w-4 h-4 text-gray-400" />
+                                            Change Password
+                                        </Link>
+                                        <button
+                                            onClick={handleLogout}
+                                            className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                                        >
+                                            <LogOut className="w-4 h-4" />
+                                            Sign Out
+                                        </button>
+                                    </div>
+                                )}
                             </div>
-                            <button
-                                onClick={handleLogout}
-                                className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors"
-                                aria-label="Logout"
-                            >
-                                <LogOut className="w-5 h-5" />
-                            </button>
                         </div>
                     </div>
                 </div>

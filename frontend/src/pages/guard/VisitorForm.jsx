@@ -24,8 +24,13 @@ const VisitorForm = () => {
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(false);
     const [visitorData, setVisitorData] = useState(null);
+    const [phoneCountry, setPhoneCountry] = useState('+254');
+    const [hostPhoneCountry, setHostPhoneCountry] = useState('+254');
 
     const navigate = useNavigate();
+
+    const isStudentVisit = formData.purpose_category === 'STUDENT_VISIT';
+    const isPersonal = formData.purpose_category === 'PERSONAL';
 
     const purposeOptions = [
         { value: 'MEETING', label: 'Business Meeting' },
@@ -51,32 +56,36 @@ const VisitorForm = () => {
         setLoading(true);
         setError(null);
 
-        // Validate National ID — Kenyan IDs are exactly 8 digits
-        const idRegex = /^\d{8}$/;
-        if (!idRegex.test(formData.national_id.trim())) {
-            setError("National ID must be exactly 8 digits (numbers only).");
+        // Validate National ID
+        const idValue = formData.national_id.trim();
+        if (idValue.length < 5 || idValue.length > 20) {
+            setError("National ID must be between 5 and 20 characters.");
             setLoading(false);
             return;
         }
 
         // Validate visitor phone if provided
-        const phoneRegex = /^(\+254|0)[17]\d{8}$/;
-        if (formData.phone && !phoneRegex.test(formData.phone.trim())) {
-            setError("Please enter a valid Kenyan phone number (e.g. +254712345678 or 0712345678).");
+        const phoneRegex = /^\+?[0-9\s\-]{6,20}$/;
+        if (formData.phone && !phoneRegex.test((phoneCountry + formData.phone).trim())) {
+            setError("Please enter a valid phone number.");
             setLoading(false);
             return;
         }
 
         // Validate host phone if provided
-        if (formData.host_phone && !phoneRegex.test(formData.host_phone.trim())) {
-            setError("Please enter a valid host phone number (e.g. +254712345678 or 0712345678).");
+        if (formData.host_phone && !phoneRegex.test((hostPhoneCountry + formData.host_phone).trim())) {
+            setError("Please enter a valid host phone number.");
             setLoading(false);
             return;
         }
 
+        const submitData = { ...formData };
+        if (submitData.phone) submitData.phone = phoneCountry + submitData.phone;
+        if (submitData.host_phone) submitData.host_phone = hostPhoneCountry + submitData.host_phone;
+
         try {
             // Submit visitor data
-            const response = await api.post('/api/visitors/', formData);
+            const response = await api.post('/api/visitors/', submitData);
             setVisitorData(response.data);
             setSuccess(true);
 
@@ -150,7 +159,7 @@ const VisitorForm = () => {
                             <UserPlus className="w-10 h-10" />
                         </div>
 
-                        <h2 className="text-2xl font-bold text-center text-gray-900 mb-6">Enhanced Visitor Registration</h2>
+                        <h2 className="text-2xl font-bold text-center text-gray-900 mb-6">Visitor Registration</h2>
 
                         {error && (
                             <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 font-medium">
@@ -181,17 +190,15 @@ const VisitorForm = () => {
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wide">National ID *</label>
+                                    <label className="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wide">National ID / Passport *</label>
                                     <input
                                         type="text"
                                         name="national_id"
                                         required
-                                        minLength={8}
-                                        maxLength={8}
-                                        inputMode="numeric"
-                                        pattern="\d{8}"
-                                        title="National ID must be exactly 8 digits"
-                                        placeholder="Required for entry (8 digits)"
+                                        minLength={5}
+                                        maxLength={20}
+                                        title="ID must be 5-20 characters"
+                                        placeholder="Required for entry"
                                         value={formData.national_id}
                                         onChange={handleChange}
                                         className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-0 focus:border-blue-500 transition-colors shadow-sm bg-white font-mono"
@@ -201,25 +208,37 @@ const VisitorForm = () => {
                                 <div>
                                     <label className="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wide flex items-center">
                                         <Phone className="w-4 h-4 mr-1" />
-                                        Phone Number
+                                        Phone Number <span className="text-gray-400 normal-case ml-1 font-normal">(optional)</span>
                                     </label>
-                                    <input
-                                        type="tel"
-                                        name="phone"
-                                        placeholder="e.g. +254712345678"
-                                        pattern="(\+254|0)[17]\d{8}"
-                                        title="Enter a valid Kenyan phone number"
-                                        maxLength={15}
-                                        value={formData.phone}
-                                        onChange={handleChange}
-                                        className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-0 focus:border-blue-500 transition-colors shadow-sm bg-white"
-                                    />
+                                    <div className="flex w-full">
+                                        <select 
+                                            value={phoneCountry} 
+                                            onChange={(e) => setPhoneCountry(e.target.value)}
+                                            className="px-2 py-3 border-y-2 border-l-2 border-gray-300 rounded-l-xl focus:ring-0 focus:border-blue-500 bg-gray-50 text-gray-700 border-r-0"
+                                        >
+                                            <option value="+254">KE (+254)</option>
+                                            <option value="+256">UG (+256)</option>
+                                            <option value="+255">TZ (+255)</option>
+                                            <option value="+1">US (+1)</option>
+                                            <option value="+44">UK (+44)</option>
+                                            <option value="">Other</option>
+                                        </select>
+                                        <input
+                                            type="tel"
+                                            name="phone"
+                                            placeholder="e.g. 712345678"
+                                            maxLength={15}
+                                            value={formData.phone}
+                                            onChange={handleChange}
+                                            className="flex-1 px-4 py-3 border-2 border-gray-300 rounded-r-xl focus:ring-0 focus:border-blue-500 transition-colors shadow-sm bg-white"
+                                        />
+                                    </div>
                                 </div>
 
                                 <div>
                                     <label className="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wide flex items-center">
                                         <Mail className="w-4 h-4 mr-1" />
-                                        Email Address
+                                        Email Address <span className="text-gray-400 normal-case ml-1 font-normal">(optional)</span>
                                     </label>
                                     <input
                                         type="email"
@@ -231,21 +250,23 @@ const VisitorForm = () => {
                                     />
                                 </div>
 
-                                <div className="md:col-span-2">
-                                    <label className="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wide flex items-center">
-                                        <Building2 className="w-4 h-4 mr-1" />
-                                        Organization/Company
-                                    </label>
-                                    <input
-                                        type="text"
-                                        name="organization"
-                                        placeholder="e.g. ABC Company Ltd"
-                                        maxLength={100}
-                                        value={formData.organization}
-                                        onChange={handleChange}
-                                        className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-0 focus:border-blue-500 transition-colors shadow-sm bg-white"
-                                    />
-                                </div>
+                                {!(isStudentVisit || isPersonal) && (
+                                    <div className="md:col-span-2">
+                                        <label className="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wide flex items-center">
+                                            <Building2 className="w-4 h-4 mr-1" />
+                                            Organization/Company <span className="text-gray-400 normal-case ml-1 font-normal">(optional)</span>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            name="organization"
+                                            placeholder="e.g. ABC Company Ltd"
+                                            maxLength={100}
+                                            value={formData.organization}
+                                            onChange={handleChange}
+                                            className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-0 focus:border-blue-500 transition-colors shadow-sm bg-white"
+                                        />
+                                    </div>
+                                )}
                             </div>
                         </div>
 
@@ -276,7 +297,7 @@ const VisitorForm = () => {
                                 <div>
                                     <label className="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wide flex items-center">
                                         <Clock className="w-4 h-4 mr-1" />
-                                        Expected Duration (minutes) *
+                                        Maximum Duration (minutes) *
                                     </label>
                                     <input
                                         type="number"
@@ -315,14 +336,16 @@ const VisitorForm = () => {
                             </h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wide">Host Name *</label>
+                                    <label className="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wide">
+                                        {isStudentVisit ? 'Student Name *' : 'Host Name *'}
+                                    </label>
                                     <input
                                         type="text"
                                         name="host_name"
                                         required
                                         minLength={3}
                                         maxLength={100}
-                                        placeholder="e.g. Dr. John Doe"
+                                        placeholder={isStudentVisit ? "e.g. John Doe (Student)" : "e.g. Dr. John Doe"}
                                         value={formData.host_name}
                                         onChange={handleChange}
                                         className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-0 focus:border-blue-500 transition-colors shadow-sm bg-white"
@@ -330,38 +353,56 @@ const VisitorForm = () => {
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wide">Host Phone</label>
-                                    <input
-                                        type="tel"
-                                        name="host_phone"
-                                        placeholder="Host contact number"
-                                        pattern="(\+254|0)[17]\d{8}"
-                                        title="Enter a valid Kenyan phone number"
-                                        maxLength={15}
-                                        value={formData.host_phone}
-                                        onChange={handleChange}
-                                        className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-0 focus:border-blue-500 transition-colors shadow-sm bg-white"
-                                    />
+                                    <label className="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wide">
+                                        {isStudentVisit ? 'Student Phone' : 'Host Phone'} <span className="text-gray-400 normal-case ml-1 font-normal">(optional)</span>
+                                    </label>
+                                    <div className="flex w-full">
+                                        <select 
+                                            value={hostPhoneCountry} 
+                                            onChange={(e) => setHostPhoneCountry(e.target.value)}
+                                            className="px-2 py-3 border-y-2 border-l-2 border-gray-300 rounded-l-xl focus:ring-0 focus:border-blue-500 bg-gray-50 text-gray-700 border-r-0"
+                                        >
+                                            <option value="+254">KE (+254)</option>
+                                            <option value="+256">UG (+256)</option>
+                                            <option value="+255">TZ (+255)</option>
+                                            <option value="+1">US (+1)</option>
+                                            <option value="+44">UK (+44)</option>
+                                            <option value="">Other</option>
+                                        </select>
+                                        <input
+                                            type="tel"
+                                            name="host_phone"
+                                            placeholder="Contact no."
+                                            maxLength={15}
+                                            value={formData.host_phone}
+                                            onChange={handleChange}
+                                            className="flex-1 px-4 py-3 border-2 border-gray-300 rounded-r-xl focus:ring-0 focus:border-blue-500 transition-colors shadow-sm bg-white"
+                                        />
+                                    </div>
                                 </div>
 
-                                <div>
-                                    <label className="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wide">Department</label>
-                                    <input
-                                        type="text"
-                                        name="department"
-                                        placeholder="e.g. Computer Science, Admissions"
-                                        value={formData.department}
-                                        onChange={handleChange}
-                                        className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-0 focus:border-blue-500 transition-colors shadow-sm bg-white"
-                                    />
-                                </div>
+                                {(!isStudentVisit) && (
+                                    <div>
+                                        <label className="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wide">Department <span className="text-gray-400 normal-case ml-1 font-normal">(optional)</span></label>
+                                        <input
+                                            type="text"
+                                            name="department"
+                                            placeholder="e.g. Computer Science"
+                                            value={formData.department}
+                                            onChange={handleChange}
+                                            className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-0 focus:border-blue-500 transition-colors shadow-sm bg-white"
+                                        />
+                                    </div>
+                                )}
 
                                 <div>
-                                    <label className="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wide">Office Location</label>
+                                    <label className="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wide">
+                                        {isStudentVisit ? 'Hostel / Location' : 'Office Location'} <span className="text-gray-400 normal-case ml-1 font-normal">(optional)</span>
+                                    </label>
                                     <input
                                         type="text"
                                         name="office_location"
-                                        placeholder="e.g. Block C - Room 205"
+                                        placeholder={isStudentVisit ? "e.g. Block A" : "e.g. Block C - Room 205"}
                                         value={formData.office_location}
                                         onChange={handleChange}
                                         className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-0 focus:border-blue-500 transition-colors shadow-sm bg-white"
@@ -369,7 +410,9 @@ const VisitorForm = () => {
                                 </div>
 
                                 <div className="md:col-span-2">
-                                    <label className="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wide">Host Email</label>
+                                    <label className="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wide">
+                                        {isStudentVisit ? 'Student Email' : 'Host Email'} <span className="text-gray-400 normal-case ml-1 font-normal">(optional)</span>
+                                    </label>
                                     <input
                                         type="email"
                                         name="host_email"

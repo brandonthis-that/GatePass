@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   ArrowLeft, 
-  Download, 
+  Printer,
   Calendar, 
   Filter, 
   BarChart3, 
@@ -23,6 +23,7 @@ const AdminReports = () => {
   const [dateFilter, setDateFilter] = useState('');
   const [typeFilter, setTypeFilter] = useState('all');
   const [guardFilter, setGuardFilter] = useState('all');
+  const printRef = useRef(null);
 
   useEffect(() => {
     fetchData();
@@ -54,26 +55,8 @@ const AdminReports = () => {
     // For now, we'll show all logs but this could be enhanced
   };
 
-  const exportToCSV = () => {
-    const headers = ['Timestamp', 'Type', 'Guard', 'Details', 'Notes'];
-    const csvContent = [
-      headers.join(','),
-      ...logs.map(log => [
-        new Date(log.timestamp).toISOString(),
-        log.log_type,
-        log.guard_name || 'System',
-        log.notes || '',
-        ''
-      ].map(field => `"${field}"`).join(','))
-    ].join('\\n');
-
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `gate-logs-${new Date().toISOString().split('T')[0]}.csv`;
-    a.click();
-    window.URL.revokeObjectURL(url);
+  const handlePrint = () => {
+    window.print();
   };
 
   const getLogTypeIcon = (type) => {
@@ -142,11 +125,11 @@ const AdminReports = () => {
               </div>
             </div>
             <button 
-              onClick={exportToCSV}
-              className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              onClick={handlePrint}
+              className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors no-print"
             >
-              <Download className="w-4 h-4 mr-2" />
-              Export CSV
+              <Printer className="w-4 h-4 mr-2" />
+              Print Report
             </button>
           </div>
         </div>

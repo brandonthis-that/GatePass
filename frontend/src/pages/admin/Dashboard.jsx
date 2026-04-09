@@ -12,6 +12,7 @@ import {
   LogOut 
 } from 'lucide-react';
 import api from '../../api/axios';
+import AlertsWidget from '../shared/AlertsWidget';
 
 const AdminDashboard = () => {
   const { user, logout } = useContext(AuthContext);
@@ -44,10 +45,10 @@ const AdminDashboard = () => {
           
           setStats(prev => ({
             ...prev,
-            totalUsers: usersRes.data.length || 0,
-            totalAssets: assetsRes.data.length || 0,
-            totalVehicles: vehiclesRes.data.length || 0,
-            totalLogs: logsResponse.data.length || 0,
+            totalUsers: Array.isArray(usersRes.data) ? usersRes.data.length : (usersRes.data.count ?? 0),
+            totalAssets: assetsRes.data.count ?? 0,
+            totalVehicles: vehiclesRes.data.count ?? 0,
+            totalLogs: logsResponse.data.count ?? 0,
           }));
         } catch (statsError) {
           console.warn('Some stats could not be loaded:', statsError);
@@ -119,8 +120,13 @@ const AdminDashboard = () => {
         </div>
       </div>
 
+      {/* Alerts */}
+      <div className="p-6 pb-0">
+        <AlertsWidget />
+      </div>
+
       {/* Stats Cards */}
-      <div className="p-6">
+      <div className="p-6 pt-0">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <div className="bg-white p-6 rounded-xl shadow-sm border">
             <div className="flex items-center">

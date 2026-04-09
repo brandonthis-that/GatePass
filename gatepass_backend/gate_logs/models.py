@@ -34,3 +34,5 @@ class GateLog(models.Model):
         max_length=20, blank=True
     )  # For unregistered vehicles
     is_visitor = models.BooleanField(default=False)
+    driver_name = models.CharField(max_length=150, blank=True)
+    declared_items = models.TextField(blank=True)

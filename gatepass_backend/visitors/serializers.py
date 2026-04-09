@@ -17,7 +17,7 @@ class VisitorConfirmationSerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "confirmed_at"]
 
 
-KENYAN_PHONE_RE = re.compile(r'^(\+254|0)[17]\d{8}$')
+INTL_PHONE_RE = re.compile(r'^\+?[0-9\s\-]{6,25}$')
 
 
 class VisitorSerializer(serializers.ModelSerializer):
@@ -63,30 +63,30 @@ class VisitorSerializer(serializers.ModelSerializer):
         return f"/api/visitors/verify/?token={obj.qr_token}"
 
     def validate_national_id(self, value):
-        """Kenyan National IDs are exactly 8 digits."""
+        """Accept international IDs/passports: 5–20 characters."""
         value = value.strip()
-        if not re.match(r'^\d{8}$', value):
+        if len(value) < 5 or len(value) > 20:
             raise serializers.ValidationError(
-                "National ID must be exactly 8 digits (numbers only)."
+                "ID/Passport must be between 5 and 20 characters."
             )
         return value
 
     def validate_phone(self, value):
-        """Optional but if provided must be a valid Kenyan number."""
+        """Optional; if provided must be a plausible international phone number."""
         if value:
             value = value.strip()
-            if not KENYAN_PHONE_RE.match(value):
+            if not INTL_PHONE_RE.match(value):
                 raise serializers.ValidationError(
-                    "Enter a valid Kenyan phone number (e.g. +254712345678 or 0712345678)."
+                    "Enter a valid phone number (e.g. +254712345678)."
                 )
         return value
 
     def validate_host_phone(self, value):
         if value:
             value = value.strip()
-            if not KENYAN_PHONE_RE.match(value):
+            if not INTL_PHONE_RE.match(value):
                 raise serializers.ValidationError(
-                    "Enter a valid Kenyan host phone number (e.g. +254712345678 or 0712345678)."
+                    "Enter a valid host phone number (e.g. +254712345678)."
                 )
         return value
 

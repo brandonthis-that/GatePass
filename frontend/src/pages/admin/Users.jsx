@@ -56,6 +56,7 @@ const EMPTY_FORM = {
 const UserFormModal = ({ open, onClose, onSaved, editUser }) => {
   const [form, setForm] = useState(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const isEditing = Boolean(editUser);
@@ -63,6 +64,7 @@ const UserFormModal = ({ open, onClose, onSaved, editUser }) => {
   useEffect(() => {
     if (open) {
       setError('');
+      setSaved(false);
       setShowPassword(false);
       setForm(editUser
         ? { ...EMPTY_FORM, ...editUser, password: '' }
@@ -115,7 +117,11 @@ const UserFormModal = ({ open, onClose, onSaved, editUser }) => {
         await api.post('/api/users/', payload);
       }
       onSaved();
-      onClose();
+      setSaved(true);
+      setTimeout(() => {
+        setSaved(false);
+        onClose();
+      }, 1200);
     } catch (err) {
       const data = err.response?.data;
       if (data && typeof data === 'object') {
@@ -130,6 +136,25 @@ const UserFormModal = ({ open, onClose, onSaved, editUser }) => {
   };
 
   if (!open) return null;
+
+  // Success flash
+  if (saved) return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-8 flex flex-col items-center gap-3">
+        <div className="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center">
+          <CheckCircle className="w-8 h-8 text-green-600" />
+        </div>
+        <p className="text-lg font-bold text-gray-900">
+          {isEditing ? 'Changes Saved!' : 'User Created!'}
+        </p>
+        <p className="text-sm text-gray-500 text-center">
+          {isEditing
+            ? `${form.first_name}'s account has been updated.`
+            : `${form.first_name} ${form.last_name} can now log in.`}
+        </p>
+      </div>
+    </div>
+  );
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
@@ -188,9 +213,9 @@ const UserFormModal = ({ open, onClose, onSaved, editUser }) => {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
               <input name="phone" type="tel" value={form.phone} onChange={handle}
-                pattern="(\+254|0)[17]\d{8}"
-                title="Enter a valid Kenyan phone number (e.g. +254712345678)"
-                maxLength={15}
+                pattern="^\+?[0-9\s\-]{6,20}$"
+                title="Enter a valid phone number"
+                maxLength={20}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm" />
             </div>
           </div>
@@ -368,6 +393,7 @@ const AdminUsers = () => {
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
   const [bannedFilter, setBannedFilter] = useState('all');
 
@@ -380,9 +406,16 @@ const AdminUsers = () => {
   useEffect(() => { fetchUsers(); }, []);
 
   useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(searchTerm);
+    }, 300);
+    return () => clearTimeout(handler);
+  }, [searchTerm]);
+
+  useEffect(() => {
     let filtered = users;
-    if (searchTerm) {
-      const q = searchTerm.toLowerCase();
+    if (debouncedSearch) {
+      const q = debouncedSearch.toLowerCase();
       filtered = filtered.filter(u =>
         u.username?.toLowerCase().includes(q) ||
         u.first_name?.toLowerCase().includes(q) ||
@@ -395,17 +428,17 @@ const AdminUsers = () => {
     if (bannedFilter === 'banned') filtered = filtered.filter(u => u.is_banned);
     if (bannedFilter === 'active') filtered = filtered.filter(u => !u.is_banned);
     setFilteredUsers(filtered);
-  }, [users, searchTerm, roleFilter, bannedFilter]);
+  }, [users, debouncedSearch, roleFilter, bannedFilter]);
 
-  const fetchUsers = async () => {
+  const fetchUsers = async (silent = false) => {
     try {
-      setLoading(true);
+      if (!silent) setLoading(true);
       const res = await api.get('/api/users/');
-      setUsers(res.data);
+      setUsers(res.data.results || res.data);
     } catch (err) {
       console.error('Error fetching users:', err);
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   };
 
@@ -415,7 +448,7 @@ const AdminUsers = () => {
   const unban = async (u) => {
     try {
       await api.post(`/api/users/${u.id}/unban/`);
-      fetchUsers();
+      fetchUsers(true);
     } catch (err) {
       console.error('Unban failed:', err);
     }
@@ -437,19 +470,19 @@ const AdminUsers = () => {
         open={showForm}
         editUser={editUser}
         onClose={() => setShowForm(false)}
-        onSaved={fetchUsers}
+        onSaved={() => fetchUsers(true)}
       />
       <DeleteModal
         open={Boolean(deleteTarget)}
         user={deleteTarget}
         onClose={() => setDeleteTarget(null)}
-        onDeleted={fetchUsers}
+        onDeleted={() => fetchUsers(true)}
       />
       <BanModal
         open={Boolean(banTarget)}
         user={banTarget}
         onClose={() => setBanTarget(null)}
-        onUpdated={fetchUsers}
+        onUpdated={() => fetchUsers(true)}
       />
 
       {/* Header */}
@@ -511,7 +544,10 @@ const AdminUsers = () => {
 
           {/* Stats */}
           <div className="mt-3 flex flex-wrap gap-4 text-sm text-gray-500">
-            <span className="font-medium text-gray-700">Showing {filteredUsers.length} of {users.length}</span>
+            <span className="font-medium text-gray-700">
+              Showing {Math.min(filteredUsers.length, 50)} of {filteredUsers.length} results 
+              (Total users: {users.length})
+            </span>
             <span>Students: <b>{users.filter(u => u.role === 'student').length}</b></span>
             <span>Staff: <b>{users.filter(u => u.role === 'staff').length}</b></span>
             <span>Guards: <b>{users.filter(u => u.role === 'guard').length}</b></span>
@@ -534,7 +570,7 @@ const AdminUsers = () => {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {filteredUsers.map(user => (
+                {filteredUsers.slice(0, 50).map(user => (
                   <tr key={user.id} className={`hover:bg-gray-50 transition-colors ${user.is_banned ? 'bg-red-50' : ''}`}>
                     {/* User */}
                     <td className="px-6 py-4 whitespace-nowrap">

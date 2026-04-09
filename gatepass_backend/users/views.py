@@ -33,11 +33,14 @@ class UserProfileView(generics.RetrieveUpdateAPIView):
         return self.request.user
 
     def perform_update(self, serializer):
-        # If user is changing their password, clear the must_change_password flag
+        # If user is changing their password, verify old password first
         if 'password' in self.request.data:
-            password = self.request.data['password']
+            old_password = self.request.data.get('old_password', '')
             user = serializer.instance
-            user.set_password(password)
+            if not user.check_password(old_password):
+                from rest_framework.exceptions import ValidationError
+                raise ValidationError({'old_password': 'Current password is incorrect.'})
+            user.set_password(self.request.data['password'])
             user.must_change_password = False
             user.save()
         else:
@@ -59,6 +62,7 @@ class AdminUserViewSet(viewsets.ModelViewSet):
 
     queryset = User.objects.all().order_by("id")
     permission_classes = [IsAdmin]
+    pagination_class = None  # Admins always need the full list for search/filter
 
     def get_serializer_class(self):
         if self.action == "create":

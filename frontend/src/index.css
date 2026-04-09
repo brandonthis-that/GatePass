@@ -12,3 +12,20 @@
   --color-blue-800: #002277;
   --color-blue-900: #001144;
 }
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  body {
+    background: white !important;
+  }
+
+  .shadow-sm, .shadow, .shadow-lg {
+    box-shadow: none !important;
+  }
+
+  tr {
+    page-break-inside: avoid;
+  }
+}

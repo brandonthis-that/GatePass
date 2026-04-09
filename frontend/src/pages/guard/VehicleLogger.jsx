@@ -9,6 +9,8 @@ const VehicleLogger = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [successMsg, setSuccessMsg] = useState('');
+    const [driverName, setDriverName] = useState('');
+    const [declaredItems, setDeclaredItems] = useState('');
 
     const navigate = useNavigate();
 
@@ -20,6 +22,8 @@ const VehicleLogger = () => {
         setError(null);
         setVehicleData(null);
         setSuccessMsg('');
+        setDriverName('');
+        setDeclaredItems('');
 
         try {
             const res = await api.get(`/api/vehicles/lookup/?plate=${encodeURIComponent(plate.trim())}`);
@@ -39,9 +43,17 @@ const VehicleLogger = () => {
     const handleLogEvent = async (type) => {
         setLoading(true);
         setError(null);
+        if (vehicleData.notFound && !driverName.trim()) {
+            setError("Driver name is required for unregistered vehicles.");
+            setLoading(false);
+            return;
+        }
+
         try {
             const payload = {
                 log_type: type, // "VEHICLE_ENTRY" or "VEHICLE_EXIT"
+                driver_name: driverName.trim() || (vehicleData.notFound ? '' : vehicleData.owner_name),
+                declared_items: declaredItems.trim(),
             };
 
             if (vehicleData.notFound) {
@@ -60,6 +72,8 @@ const VehicleLogger = () => {
                 setPlate('');
                 setVehicleData(null);
                 setSuccessMsg('');
+                setDriverName('');
+                setDeclaredItems('');
             }, 2000);
 
         } catch {
@@ -153,6 +167,30 @@ const VehicleLogger = () => {
                             </div>
                         </div>
                     )}
+
+                    {/* Driver & Items Panel */}
+                    <div className="px-6 py-4 bg-white border-b border-gray-100 space-y-3">
+                        <div>
+                            <label className="block text-sm font-bold text-gray-700 mb-1">Driver Name {vehicleData.notFound ? '*' : ''}</label>
+                            <input 
+                                type="text"
+                                value={driverName}
+                                onChange={(e) => setDriverName(e.target.value)}
+                                placeholder={vehicleData.notFound ? "Required for unregistered" : vehicleData.owner_name}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-bold text-gray-700 mb-1">Items in Vehicle (if any)</label>
+                            <input 
+                                type="text"
+                                value={declaredItems}
+                                onChange={(e) => setDeclaredItems(e.target.value)}
+                                placeholder="E.g., 2 laptops, 1 monitor..."
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                            />
+                        </div>
+                    </div>
 
                     {/* Action Buttons */}
                     <div className="p-6 grid grid-cols-2 gap-4 bg-gray-50">

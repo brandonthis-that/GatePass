@@ -25,7 +25,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECRET_KEY = "django-insecure-e4+*wa7se))p4r!go8)(1884spnyc2#_$=uyd*-u*-hlz4y4=!"
 SECRET_KEY = config("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = config("DEBUG", default=False, cast=bool)
 
 allowed_hosts_str = config("ALLOWED_HOSTS", default="*")
 ALLOWED_HOSTS = [host.strip() for host in allowed_hosts_str.split(",") if host.strip()]
@@ -65,8 +65,17 @@ MIDDLEWARE = [
 # In local development, allowing all CORS origins prevents issues when accessing the app from devices on the local network
 CORS_ALLOW_ALL_ORIGINS = config("CORS_ALLOW_ALL_ORIGINS", default=DEBUG, cast=bool)
 
-cors_origins = config("CORS_ALLOWED_ORIGINS", default="https://localhost:5173,https://127.0.0.1:5173")
+cors_origins = config("CORS_ALLOWED_ORIGINS", default="")
 CORS_ALLOWED_ORIGINS = [origin.strip() for origin in cors_origins.split(",") if origin.strip()]
+
+# Automatically allow CORS for all local development IPs (localhost, 192.168.*, 10.*, etc.)
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"^https?://(?:localhost|127\.0\.0\.1):\d+$",
+    r"^https?://192\.168\.\d+\.\d+:\d+$",
+    r"^https?://10\.\d+\.\d+\.\d+:\d+$",
+    r"^https?://172\.(?:1[6-9]|2[0-9]|3[0-1])\.\d+\.\d+:\d+$",
+]
+
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
@@ -75,6 +84,8 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticated",
     ],
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 25,
 }
 
 ROOT_URLCONF = "gatepass_backend.urls"

@@ -11,6 +11,7 @@ export default defineConfig(({ mode }) => {
 
   return {
     server: {
+      host: true, // Listens on all local IPs (0.0.0.0) automatically
       proxy: {
         '/api': {
           target: target,
