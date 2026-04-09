@@ -27,7 +27,8 @@ SECRET_KEY = config("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["192.168.100.72", "localhost", "127.0.0.1"]
+allowed_hosts_str = config("ALLOWED_HOSTS", default="*")
+ALLOWED_HOSTS = [host.strip() for host in allowed_hosts_str.split(",") if host.strip()]
 
 
 # Application definition
@@ -61,7 +62,10 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-cors_origins = config("CORS_ALLOWED_ORIGINS", default="https://localhost:5173,https://127.0.0.1:5173,https://192.168.100.72:5173")
+# In local development, allowing all CORS origins prevents issues when accessing the app from devices on the local network
+CORS_ALLOW_ALL_ORIGINS = config("CORS_ALLOW_ALL_ORIGINS", default=DEBUG, cast=bool)
+
+cors_origins = config("CORS_ALLOWED_ORIGINS", default="https://localhost:5173,https://127.0.0.1:5173")
 CORS_ALLOWED_ORIGINS = [origin.strip() for origin in cors_origins.split(",") if origin.strip()]
 
 REST_FRAMEWORK = {

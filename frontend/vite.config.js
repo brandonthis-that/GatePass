@@ -7,7 +7,7 @@ import basicSsl from '@vitejs/plugin-basic-ssl'
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
-  const target = env.VITE_PROXY_TARGET || 'http://192.168.100.72:8000';
+  const target = env.VITE_PROXY_TARGET || 'http://127.0.0.1:8000';
 
   return {
     server: {
