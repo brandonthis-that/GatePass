@@ -1,28 +1,30 @@
 import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { AuthContext } from '../context/AuthContext';
 import anulogo from '../assets/anulogo.svg';
+import { AlertCircle } from 'lucide-react';
+import { LoginSchema } from '../utils/schemas';
 
 const Login = () => {
-    const [username, setUsername] = useState('');
-    const [password, setPassword] = useState('');
-    const [error, setError] = useState(null);
-    const [isLoading, setIsLoading] = useState(false);
+    const [globalError, setGlobalError] = useState(null);
 
     const { login } = useContext(AuthContext);
     const navigate = useNavigate();
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        const trimmedUsername = username.trim();
-        if (!trimmedUsername) {
-            setError('Please enter your username.');
-            return;
+    const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm({
+        resolver: zodResolver(LoginSchema),
+        defaultValues: {
+            username: '',
+            password: ''
         }
-        setIsLoading(true);
-        setError(null);
+    });
+
+    const onSubmit = async (data) => {
+        setGlobalError(null);
         try {
-            const user = await login(trimmedUsername, password);
+            const user = await login(data.username, data.password);
 
             // Enforce change password on first login (backend flag)
             if (user.must_change_password) {
@@ -35,59 +37,58 @@ const Login = () => {
                 navigate(dest, { replace: true });
             }
         } catch {
-            setError('Invalid username or password. Please try again.');
-        } finally {
-            setIsLoading(false);
+            setGlobalError('Invalid username or password. Please try again.');
         }
     };
 
     return (
-        <div className="flex min-h-screen items-center justify-center bg-gray-100 p-4">
-            <div className="w-full max-w-md bg-white p-8 rounded-xl shadow-lg border border-gray-200">
-                <div className="flex flex-col items-center mb-8">
-                    <img src={anulogo} alt="ANU Logo" className="w-24 h-24 object-contain mb-4" />
-                    <h2 className="text-3xl font-bold text-gray-800">GatePass SignIn</h2>
-                    <p className="text-gray-500 mt-2 text-center text-sm">Use your credentials to access the portal</p>
+        <div className="flex min-h-screen items-center justify-center bg-gray-50 p-4 font-sans">
+            <div className="w-full max-w-md gate-card shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+                <div className="flex flex-col items-center mb-8 border-b-2 border-gray-900 pb-8">
+                    <img src={anulogo} alt="ANU Logo" className="w-24 h-24 object-contain mb-6" />
+                    <h2 className="text-3xl font-display font-black text-gray-900 uppercase tracking-tighter">GatePass</h2>
+                    <p className="font-bold text-gray-500 mt-2 text-center text-xs tracking-widest uppercase">Institutional Access</p>
                 </div>
 
-                {error && (
-                    <div className="mb-6 p-4 rounded-lg bg-red-50 border-l-4 border-red-500 flex items-start text-red-700">
-                        <span className="block sm:inline">{error}</span>
+                {globalError && (
+                    <div className="mb-8 p-4 bg-red-50 border-2 border-red-500 flex items-start text-red-700 shadow-[4px_4px_0px_0px_rgba(239,68,68,1)]">
+                        <AlertCircle className="w-5 h-5 mr-3 shrink-0" />
+                        <span className="block sm:inline font-bold uppercase text-xs tracking-wider">{globalError}</span>
                     </div>
                 )}
 
-                <form onSubmit={handleSubmit} className="space-y-6">
+                <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Username</label>
+                        <label className="block text-xs font-bold text-gray-900 mb-2 uppercase tracking-wider">Username</label>
                         <input
                             type="text"
-                            required
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-blue-600 transition-colors shadow-sm"
+                            {...register('username')}
+                            className="gate-input"
                             placeholder="e.g., jdoe2024"
-                            value={username}
-                            onChange={(e) => setUsername(e.target.value)}
                         />
+                        {errors.username && <p className="mt-2 text-xs font-bold text-red-600">{errors.username.message}</p>}
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                        <label className="block text-xs font-bold text-gray-900 mb-2 uppercase tracking-wider">Password</label>
                         <input
                             type="password"
-                            required
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-blue-600 transition-colors shadow-sm"
+                            {...register('password')}
+                            className="gate-input"
                             placeholder="••••••••"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
                         />
+                        {errors.password && <p className="mt-2 text-xs font-bold text-red-600">{errors.password.message}</p>}
                     </div>
 
-                    <button
-                        type="submit"
-                        disabled={isLoading}
-                        className={`w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-lg font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-600 transition-colors ${isLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
-                    >
-                        {isLoading ? 'Signing in...' : 'Sign In'}
-                    </button>
+                    <div className="pt-4">
+                        <button
+                            type="submit"
+                            disabled={isSubmitting}
+                            className="gate-btn shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-y-[4px] active:shadow-none"
+                        >
+                            {isSubmitting ? 'AUTHENTICATING...' : 'SIGN IN'}
+                        </button>
+                    </div>
                 </form>
             </div>
         </div>

@@ -1,44 +1,37 @@
 import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { AuthContext } from '../context/AuthContext';
 import api from '../api/axios';
-import { KeyRound } from 'lucide-react';
+import { KeyRound, AlertCircle } from 'lucide-react';
+import { ChangePasswordSchema } from '../utils/schemas';
 
 const ChangePassword = () => {
-    const [oldPassword, setOldPassword] = useState('');
-    const [newPassword, setNewPassword] = useState('');
-    const [confirmPassword, setConfirmPassword] = useState('');
-    const [error, setError] = useState(null);
+    const [globalError, setGlobalError] = useState(null);
     const [success, setSuccess] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);
 
     const { user } = useContext(AuthContext);
     const navigate = useNavigate();
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        if (newPassword.length < 8) {
-            setError("New password must be at least 8 characters long.");
-            return;
+    const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm({
+        resolver: zodResolver(ChangePasswordSchema),
+        defaultValues: {
+            old_password: '',
+            new_password: '',
+            confirm_password: ''
         }
-        if (newPassword !== confirmPassword) {
-            setError("New passwords do not match.");
-            return;
-        }
+    });
 
-        setIsLoading(true);
-        setError(null);
+    const onSubmit = async (data) => {
+        setGlobalError(null);
         try {
-            // Assuming a generic pattern for changing password on a Django REST backend via PATCH
             await api.patch('/api/users/me/', {
-                old_password: oldPassword, // Example field if needed by backend, though GatePass API.md doesn't explicitly detail a specific password change route, we'll assume standard patch to /me or provide a custom mechanism. Let's patch password directly.
-                password: newPassword
+                old_password: data.old_password,
+                password: data.new_password
             });
 
             setSuccess(true);
-            
-            // Refresh happens automatically on next API call via token interceptor
-
             setTimeout(() => {
                 let dest;
                 if (user.role === 'student') dest = '/student';
@@ -47,87 +40,80 @@ const ChangePassword = () => {
                 navigate(dest, { replace: true });
             }, 2000);
         } catch (err) {
-            const data = err.response?.data;
-            if (data && typeof data === 'object') {
-                const msgs = Object.values(data).flat().join(' ');
-                setError(msgs || 'Failed to update password.');
+            const resData = err.response?.data;
+            if (resData && typeof resData === 'object') {
+                const msgs = Object.values(resData).flat().join(' ');
+                setGlobalError(msgs || 'Failed to update password.');
             } else {
-                setError('Failed to update password. Please try again.');
+                setGlobalError('Failed to update password. Please try again.');
             }
-        } finally {
-            setIsLoading(false);
         }
     };
 
     return (
-        <div className="flex min-h-screen items-center justify-center bg-gray-100 p-4">
-            <div className="w-full max-w-md bg-white p-8 rounded-xl shadow-lg border border-gray-200">
-                <div className="flex flex-col items-center mb-8">
-                    <div className="bg-amber-500 p-4 rounded-full mb-4">
+        <div className="flex min-h-screen items-center justify-center bg-gray-50 p-4 font-sans">
+            <div className="w-full max-w-md gate-card shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+                <div className="flex flex-col items-center mb-8 border-b-2 border-gray-900 pb-8">
+                    <div className="bg-brand-primary p-4 border-2 border-gray-900 mb-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
                         <KeyRound className="w-8 h-8 text-white" />
                     </div>
-                    <h2 className="text-3xl font-bold text-gray-800 text-center">Change Password</h2>
-                    <p className="text-gray-500 mt-2 text-center text-sm">Please secure your account before continuing</p>
+                    <h2 className="text-3xl font-display font-black text-gray-900 text-center uppercase tracking-tighter">Security</h2>
+                    <p className="font-bold text-gray-500 mt-2 text-center text-xs tracking-widest uppercase">Update Password</p>
                 </div>
 
-                {error && (
-                    <div className="mb-6 p-4 rounded-lg bg-red-50 border-l-4 border-red-500 flex items-start text-red-700">
-                        <span className="block sm:inline">{error}</span>
+                {globalError && (
+                    <div className="mb-8 p-4 bg-red-50 border-2 border-red-500 flex items-start text-red-700 shadow-[4px_4px_0px_0px_rgba(239,68,68,1)]">
+                        <AlertCircle className="w-5 h-5 mr-3 shrink-0" />
+                        <span className="block sm:inline font-bold uppercase text-xs tracking-wider">{globalError}</span>
                     </div>
                 )}
 
                 {success && (
-                    <div className="mb-6 p-4 rounded-lg bg-green-50 border-l-4 border-green-500 flex items-start text-green-700">
-                        <span className="block sm:inline">Password updated successfully! Redirecting...</span>
+                    <div className="mb-8 p-4 bg-white border-2 border-green-600 flex items-start text-green-700 shadow-[4px_4px_0px_0px_#16a34a]">
+                        <span className="block sm:inline font-bold uppercase text-xs tracking-wider">Password updated successfully! Redirecting...</span>
                     </div>
                 )}
 
-                <form onSubmit={handleSubmit} className="space-y-6">
+                <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Old Password</label>
+                        <label className="block text-xs font-bold text-gray-900 mb-2 uppercase tracking-wider">Old Password</label>
                         <input
                             type="password"
-                            required
-                            maxLength={128}
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-colors shadow-sm"
-                            value={oldPassword}
-                            onChange={(e) => setOldPassword(e.target.value)}
+                            {...register('old_password')}
+                            className="gate-input"
                         />
+                        {errors.old_password && <p className="mt-2 text-xs font-bold text-red-600">{errors.old_password.message}</p>}
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">New Password</label>
+                        <label className="block text-xs font-bold text-gray-900 mb-2 uppercase tracking-wider">New Password</label>
                         <input
                             type="password"
-                            required
-                            minLength={8}
-                            maxLength={128}
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-colors shadow-sm"
-                            value={newPassword}
-                            onChange={(e) => setNewPassword(e.target.value)}
+                            {...register('new_password')}
+                            className="gate-input"
                         />
+                        {errors.new_password && <p className="mt-2 text-xs font-bold text-red-600">{errors.new_password.message}</p>}
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Confirm New Password</label>
+                        <label className="block text-xs font-bold text-gray-900 mb-2 uppercase tracking-wider">Confirm New Password</label>
                         <input
                             type="password"
-                            required
-                            minLength={8}
-                            maxLength={128}
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-colors shadow-sm"
-                            value={confirmPassword}
-                            onChange={(e) => setConfirmPassword(e.target.value)}
+                            {...register('confirm_password')}
+                            className="gate-input"
                         />
+                        {errors.confirm_password && <p className="mt-2 text-xs font-bold text-red-600">{errors.confirm_password.message}</p>}
                     </div>
 
-                    <button
-                        type="submit"
-                        disabled={isLoading || success}
-                        className={`w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-lg font-medium text-white bg-amber-600 hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 transition-colors ${isLoading || success ? 'opacity-70 cursor-not-allowed' : ''}`}
-                    >
-                        {isLoading ? 'Updating...' : 'Update Password'}
-                    </button>
+                    <div className="pt-4">
+                        <button
+                            type="submit"
+                            disabled={isSubmitting || success}
+                            className="gate-btn shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-y-[4px] active:shadow-none"
+                        >
+                            {isSubmitting ? 'UPDATING...' : 'UPDATE PASSWORD'}
+                        </button>
+                    </div>
                 </form>
             </div>
         </div>

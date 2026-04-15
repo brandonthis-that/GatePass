@@ -7,9 +7,16 @@ from .models import User
 INTL_PHONE_RE = re.compile(r'^\+?[0-9\s\-]{6,25}$')
 
 
+import bleach
+
+def sanitize_text(value):
+    if value:
+        return bleach.clean(value, tags=[], attributes={}, strip=True)
+    return value
+
 def validate_username_format(value):
     """Shared username validator: min 3 chars, allowed characters only."""
-    value = value.strip()
+    value = sanitize_text(value).strip()
     if len(value) < 3:
         raise serializers.ValidationError("Username must be at least 3 characters.")
     if not re.match(r'^[a-zA-Z0-9@.+\-_]+$', value):
@@ -22,7 +29,7 @@ def validate_username_format(value):
 def validate_phone_format(value):
     """Optional phone: if provided must be a plausible international number."""
     if value:
-        value = value.strip()
+        value = sanitize_text(value).strip()
         if not INTL_PHONE_RE.match(value):
             raise serializers.ValidationError(
                 "Enter a valid phone number (e.g. +254712345678)."

@@ -1,7 +1,14 @@
+import bleach
 from rest_framework import serializers
 import re
 from .models import Visitor, VisitorConfirmation
 
+
+def sanitize_text(value):
+    """Utility to clean up text input using bleach."""
+    if value and isinstance(value, str):
+        return bleach.clean(value.strip(), tags=[], attributes={}, strip=True)
+    return value
 
 class VisitorConfirmationSerializer(serializers.ModelSerializer):
     class Meta:
@@ -15,6 +22,9 @@ class VisitorConfirmationSerializer(serializers.ModelSerializer):
             "verification_code",
         ]
         read_only_fields = ["id", "confirmed_at"]
+        
+    def validate_notes(self, value):
+        return sanitize_text(value)
 
 
 INTL_PHONE_RE = re.compile(r'^\+?[0-9\s\-]{6,25}$')
@@ -64,7 +74,7 @@ class VisitorSerializer(serializers.ModelSerializer):
 
     def validate_national_id(self, value):
         """Accept international IDs/passports: 5–20 characters."""
-        value = value.strip()
+        value = sanitize_text(value)
         if len(value) < 5 or len(value) > 20:
             raise serializers.ValidationError(
                 "ID/Passport must be between 5 and 20 characters."
@@ -74,7 +84,7 @@ class VisitorSerializer(serializers.ModelSerializer):
     def validate_phone(self, value):
         """Optional; if provided must be a plausible international phone number."""
         if value:
-            value = value.strip()
+            value = sanitize_text(value)
             if not INTL_PHONE_RE.match(value):
                 raise serializers.ValidationError(
                     "Enter a valid phone number (e.g. +254712345678)."
@@ -83,7 +93,7 @@ class VisitorSerializer(serializers.ModelSerializer):
 
     def validate_host_phone(self, value):
         if value:
-            value = value.strip()
+            value = sanitize_text(value)
             if not INTL_PHONE_RE.match(value):
                 raise serializers.ValidationError(
                     "Enter a valid host phone number (e.g. +254712345678)."
@@ -91,19 +101,28 @@ class VisitorSerializer(serializers.ModelSerializer):
         return value
 
     def validate_purpose_details(self, value):
-        value = value.strip()
+        value = sanitize_text(value)
         if len(value) < 10:
             raise serializers.ValidationError("Purpose details must be at least 10 characters.")
         return value
 
     def validate_name(self, value):
-        value = value.strip()
+        value = sanitize_text(value)
         if len(value) < 3:
             raise serializers.ValidationError("Visitor name must be at least 3 characters.")
         return value
 
     def validate_host_name(self, value):
-        value = value.strip()
+        value = sanitize_text(value)
         if len(value) < 3:
             raise serializers.ValidationError("Host name must be at least 3 characters.")
         return value
+        
+    def validate_organization(self, value):
+        return sanitize_text(value)
+        
+    def validate_department(self, value):
+        return sanitize_text(value)
+        
+    def validate_office_location(self, value):
+        return sanitize_text(value)

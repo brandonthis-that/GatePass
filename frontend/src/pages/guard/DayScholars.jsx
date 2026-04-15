@@ -66,26 +66,26 @@ const DayScholars = () => {
     });
 
     return (
-        <div className="min-h-screen bg-gray-50 flex flex-col items-center p-4 pb-24">
+        <div className="min-h-screen bg-[#f4f4f5] font-sans flex flex-col items-center p-4 sm:p-8 pb-24">
 
-            <div className="w-full max-w-lg mb-6 sticky top-4 z-10">
-                <div className="flex space-x-2 mb-4">
+            <div className="w-full max-w-2xl mb-8 sticky top-4 z-10">
+                <div className="flex space-x-4 mb-4">
                     <button
                         onClick={() => navigate('/guard')}
-                        className="flex items-center justify-center w-14 h-14 text-gray-600 bg-white shadow-md border border-gray-200 rounded-2xl hover:bg-gray-100 transition-colors"
+                        className="flex items-center justify-center w-14 h-14 bg-white border-4 border-gray-900 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:bg-gray-100 hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-y-[4px] active:shadow-none transition-all"
                         aria-label="Back"
                     >
-                        <ChevronLeft className="w-8 h-8" />
+                        <ChevronLeft className="w-8 h-8 text-gray-900" />
                     </button>
 
-                    <div className="relative flex-1 opacity-100">
+                    <div className="relative flex-1">
                         <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                            <Search className="h-6 w-6 text-gray-400" />
+                            <Search className="h-6 w-6 text-gray-900" />
                         </div>
                         <input
                             type="text"
-                            className="block w-full pl-12 pr-4 py-4 h-14 bg-white border border-gray-200 rounded-2xl leading-5 bg-transparent placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg shadow-md"
-                            placeholder="Search by name or ID..."
+                            className="block w-full pl-12 pr-4 py-4 h-14 bg-white border-4 border-gray-900 leading-5 placeholder-gray-500 focus:outline-none focus:ring-0 focus:bg-yellow-50 text-xl font-bold uppercase tracking-wide shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-colors"
+                            placeholder="NAME OR ID..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
@@ -93,50 +93,51 @@ const DayScholars = () => {
                 </div>
             </div>
 
-            <div className="w-full max-w-lg">
+            <div className="w-full max-w-2xl">
                 {error && (
-                    <div onClick={fetchScholars} className="p-4 rounded-xl bg-red-100 text-red-800 shadow-sm font-medium mb-4 text-center cursor-pointer">
-                        {error} <span className="underline">Retry</span>
+                    <div onClick={fetchScholars} className="p-4 bg-red-100 border-4 border-red-600 text-red-800 shadow-[4px_4px_0_0_rgba(220,38,38,1)] font-bold uppercase tracking-wider mb-6 text-center cursor-pointer hover:bg-red-200 transition-colors">
+                        {error} <span className="underline ml-2">RETRY</span>
                     </div>
                 )}
 
                 {loading && scholars.length === 0 ? (
-                    <div className="flex justify-center py-12">
-                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-zinc-800"></div>
+                    <div className="flex flex-col items-center justify-center py-12">
+                        <div className="animate-spin h-16 w-16 border-4 border-gray-900 border-t-blue-600 rounded-full mb-6 shadow-[4px_4px_0_0_rgba(0,0,0,1)]"></div>
+                        <p className="text-xl font-display font-black text-gray-900 uppercase">Loading Scholars...</p>
                     </div>
                 ) : (
-                    <div className="space-y-3">
+                    <div className="space-y-6">
                         {filteredScholars.length === 0 ? (
-                            <div className="bg-white p-8 rounded-2xl border border-gray-200 text-center shadow-sm">
-                                <ShieldAlert className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                                <p className="text-gray-500 text-lg">No scholars found matching your search.</p>
+                            <div className="bg-white p-12 border-4 border-gray-900 text-center shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+                                <ShieldAlert className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                                <p className="text-xl font-display font-black text-gray-900 uppercase tracking-tight">No scholars found</p>
                             </div>
                         ) : (
                             filteredScholars.map(scholar => (
-                                <div key={scholar.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 flex items-center justify-between">
-                                    <div className="flex-1 pr-4">
-                                        <h3 className="text-lg font-bold text-gray-900 leading-tight">
+                                <div key={scholar.id} className="bg-white border-4 border-gray-900 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                    <div className="flex-1">
+                                        <h3 className="text-2xl font-display font-black text-gray-900 uppercase leading-none tracking-tight">
                                             {scholar.first_name} {scholar.last_name}
                                         </h3>
-                                        <p className="text-sm font-mono text-gray-500 mt-1">{scholar.student_id}</p>
+                                        <p className="text-base font-bold text-gray-500 uppercase tracking-widest mt-2">ID: {scholar.student_id}</p>
                                     </div>
 
-                                    <div>
+                                    <div className="w-full sm:w-auto">
                                         {scholar.day_scholar_status === 'OFF_CAMPUS' ? (
                                             <button
                                                 onClick={() => handleToggleStatus(scholar.id, scholar.day_scholar_status)}
-                                                className="flex items-center justify-center p-4 bg-green-50 hover:bg-green-100 text-green-700 border border-green-200 rounded-xl font-bold min-w-[110px] active:scale-95 transition-transform"
+                                                className="w-full sm:w-auto flex items-center justify-center px-6 py-4 border-2 border-green-600 bg-green-600 text-white font-black text-xl uppercase tracking-wider shadow-[4px_4px_0_0_rgba(22,101,52,1)] hover:bg-green-700 hover:translate-y-[2px] hover:shadow-[2px_2px_0_0_rgba(22,101,52,1)] active:translate-y-[4px] active:shadow-none transition-all"
                                             >
-                                                <UserCheck className="w-5 h-5 mr-2" />
-                                                Sign IN
+                                                <UserCheck className="w-6 h-6 mr-3 border-2 border-white rounded-full p-1 bg-green-800" />
+                                                SIGN IN
                                             </button>
                                         ) : (
                                             <button
                                                 onClick={() => handleToggleStatus(scholar.id, scholar.day_scholar_status)}
-                                                className="flex items-center justify-center p-4 bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 rounded-xl font-bold min-w-[110px] active:scale-95 transition-transform"
+                                                className="w-full sm:w-auto flex items-center justify-center px-6 py-4 border-2 border-red-600 bg-red-600 text-white font-black text-xl uppercase tracking-wider shadow-[4px_4px_0_0_rgba(220,38,38,1)] hover:bg-red-700 hover:translate-y-[2px] hover:shadow-[2px_2px_0_0_rgba(220,38,38,1)] active:translate-y-[4px] active:shadow-none transition-all"
                                             >
-                                                <UserMinus className="w-5 h-5 mr-2" />
-                                                Sign OUT
+                                                <UserMinus className="w-6 h-6 mr-3 border-2 border-white rounded-full p-1 bg-red-800" />
+                                                SIGN OUT
                                             </button>
                                         )}
                                     </div>

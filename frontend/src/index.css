@@ -1,16 +1,39 @@
 @import "tailwindcss";
 
 @theme {
-  --color-blue-50: #f0f4ff;
-  --color-blue-100: #e0ebff;
-  --color-blue-200: #c0d8ff;
-  --color-blue-300: #a0c4ff;
-  --color-blue-400: #669df6;
-  --color-blue-500: #1b5edc;
-  --color-blue-600: #0044cc;
-  --color-blue-700: #0033a0;
-  --color-blue-800: #002277;
-  --color-blue-900: #001144;
+  --color-brand-50: #fbecec;
+  --color-brand-100: #f5d0d0;
+  --color-brand-200: #ecabab;
+  --color-brand-300: #e07b7b;
+  --color-brand-400: #d24e4e;
+  --color-brand-500: #c22929;
+  --color-brand-600: #a81c1c;
+  --color-brand-700: #8d1414;
+  --color-brand-800: #7b1212;
+  --color-brand-900: #4a0909;
+  --color-brand-primary: #800000;
+  --color-brand-hover: #5a0000;
+  
+  --font-sans: "DM Sans", sans-serif;
+  --font-display: "Space Grotesk", sans-serif;
+}
+
+@layer components {
+  .gate-input {
+    @apply w-full px-4 py-3 bg-white border-2 border-gray-300 text-gray-900 outline-none transition-all placeholder:text-gray-400 focus:border-brand-primary focus:ring-0;
+  }
+  
+  .gate-btn {
+    @apply w-full flex justify-center items-center py-3 px-4 bg-brand-primary border-2 border-transparent text-white font-display font-medium transition-all hover:bg-brand-hover focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-primary disabled:opacity-70 disabled:cursor-not-allowed;
+  }
+  
+  .gate-btn-secondary {
+    @apply w-full flex justify-center items-center py-3 px-4 bg-white border-2 border-gray-900 text-gray-900 font-display font-medium transition-all hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900;
+  }
+  
+  .gate-card {
+    @apply bg-white border-2 border-gray-900 p-6 md:p-8;
+  }
 }
 @media print {
   .no-print {
