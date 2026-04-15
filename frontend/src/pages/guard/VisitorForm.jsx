@@ -82,6 +82,12 @@ const VisitorForm = () => {
         const submitData = { ...formData };
         if (submitData.phone) submitData.phone = phoneCountry + submitData.phone;
         if (submitData.host_phone) submitData.host_phone = hostPhoneCountry + submitData.host_phone;
+        
+        // Fix for "Datetime has wrong format" on the backend: 
+        // Django's DateTimeField complains if given an empty string. Null is accepted.
+        if (!submitData.scheduled_time) {
+            submitData.scheduled_time = null;
+        }
 
         try {
             // Submit visitor data

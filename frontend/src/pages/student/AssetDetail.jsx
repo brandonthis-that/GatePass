@@ -65,7 +65,8 @@ const AssetDetail = () => {
             const a = document.createElement('a');
             const safeOwner = asset.owner_name ? asset.owner_name.replace(/[^a-zA-Z0-9]/g, '_') : 'Student';
             const safeAsset = asset.asset_type ? asset.asset_type.replace(/[^a-zA-Z0-9]/g, '_') : 'Asset';
-            a.href = asset.qr_code.startsWith('http') ? asset.qr_code : `${api.defaults.baseURL}${asset.qr_code}`;
+            const qrPath = asset.qr_code.startsWith('http') ? new URL(asset.qr_code).pathname : asset.qr_code;
+            a.href = `${api.defaults.baseURL}${qrPath}`;
             a.download = `${safeOwner}_${safeAsset}_QR.png`;
             a.target = "_blank";
             a.click();
@@ -99,11 +100,10 @@ const AssetDetail = () => {
         );
     }
 
-    // Handle absolute media URLs if needed, but our API setup might return a relative or absolute path 
-    // depending on Django settings. We will trust the API or prepend the backend URL if relative.
-    const qrUrl = asset.qr_code.startsWith('http')
-        ? asset.qr_code
-        : `${api.defaults.baseURL}${asset.qr_code}`;
+    // Extract only the pathname to ensure it routes correctly through Vite proxy on local networks,
+    // avoiding issues where the backend returns a localhost domain hardcoded in the url.
+    const qrPath = asset.qr_code.startsWith('http') ? new URL(asset.qr_code).pathname : asset.qr_code;
+    const qrUrl = `${api.defaults.baseURL}${qrPath}`;
 
     return (
         <PageLayout title="Asset QR Code">
