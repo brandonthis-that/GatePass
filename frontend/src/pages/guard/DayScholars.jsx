@@ -11,11 +11,16 @@ const DayScholars = () => {
 
     const navigate = useNavigate();
 
-    const fetchScholars = async () => {
+    const fetchScholars = async (search = '') => {
         try {
             setLoading(true);
-            const res = await api.get('/api/day-scholars/');
-            setScholars(res.data.results || res.data);
+            const params = {};
+            if (search.trim()) {
+                params.search = search.trim();
+            }
+            const res = await api.get('/api/day-scholars/', { params });
+            setScholars(Array.isArray(res.data) ? res.data : (res.data.results || []));
+            setError(null);
         } catch {
             setError("Failed to load scholars. Tap to retry.");
         } finally {
@@ -24,8 +29,12 @@ const DayScholars = () => {
     };
 
     useEffect(() => {
-        fetchScholars();
-    }, []);
+        const timer = setTimeout(() => {
+            fetchScholars(searchTerm);
+        }, 250);
+
+        return () => clearTimeout(timer);
+    }, [searchTerm]);
 
     const handleToggleStatus = async (id, currentStatus) => {
         // Optimistic UI update
@@ -95,7 +104,7 @@ const DayScholars = () => {
 
             <div className="w-full max-w-2xl">
                 {error && (
-                    <div onClick={fetchScholars} className="p-4 bg-red-100 border-4 border-red-600 text-red-800 shadow-[4px_4px_0_0_rgba(220,38,38,1)] font-bold uppercase tracking-wider mb-6 text-center cursor-pointer hover:bg-red-200 transition-colors">
+                    <div onClick={() => fetchScholars(searchTerm)} className="p-4 bg-red-100 border-4 border-red-600 text-red-800 shadow-[4px_4px_0_0_rgba(220,38,38,1)] font-bold uppercase tracking-wider mb-6 text-center cursor-pointer hover:bg-red-200 transition-colors">
                         {error} <span className="underline ml-2">RETRY</span>
                     </div>
                 )}

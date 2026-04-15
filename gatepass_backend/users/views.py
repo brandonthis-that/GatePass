@@ -1,4 +1,5 @@
 from gate_logs.models import GateLog
+from django.db.models import Q
 from rest_framework import generics, viewsets, status
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -99,9 +100,19 @@ class DayScholarViewSet(viewsets.ReadOnlyModelViewSet):
 
     serializer_class = UserProfileSerializer
     permission_classes = [IsGuard | IsAdmin]
+    pagination_class = None
 
     def get_queryset(self):
-        return User.objects.filter(is_day_scholar=True)
+        queryset = User.objects.filter(is_day_scholar=True)
+        search = (self.request.query_params.get("search") or "").strip()
+        if search:
+            queryset = queryset.filter(
+                Q(first_name__icontains=search)
+                | Q(last_name__icontains=search)
+                | Q(student_id__icontains=search)
+                | Q(username__icontains=search)
+            )
+        return queryset.order_by("first_name", "last_name", "student_id")
 
     @action(detail=True, methods=["post"], url_path="sign-in")
     def sign_in(self, request, pk=None):
