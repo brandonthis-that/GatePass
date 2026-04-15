@@ -27,11 +27,17 @@ class GateLogViewSet(viewsets.ModelViewSet):
 
     def _apply_filters(self, queryset):
         date_value = self.request.query_params.get("date")
+        start_date = self.request.query_params.get("start_date")
+        end_date = self.request.query_params.get("end_date")
         log_type = self.request.query_params.get("log_type")
         guard_id = self.request.query_params.get("guard")
 
         if date_value:
             queryset = queryset.filter(timestamp__date=date_value)
+        if start_date:
+            queryset = queryset.filter(timestamp__date__gte=start_date)
+        if end_date:
+            queryset = queryset.filter(timestamp__date__lte=end_date)
         if log_type:
             queryset = queryset.filter(log_type=log_type)
         if guard_id:

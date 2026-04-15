@@ -20,7 +20,8 @@ const AdminReports = () => {
   const [loading, setLoading] = useState(true);
   const [filtering, setFiltering] = useState(false);
   const [error, setError] = useState('');
-  const [dateFilter, setDateFilter] = useState('');
+  const [startDateFilter, setStartDateFilter] = useState('');
+  const [endDateFilter, setEndDateFilter] = useState('');
   const [typeFilter, setTypeFilter] = useState('all');
   const [guardFilter, setGuardFilter] = useState('all');
 
@@ -32,11 +33,12 @@ const AdminReports = () => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     fetchFilteredData();
-  }, [dateFilter, typeFilter, guardFilter]);
+  }, [startDateFilter, endDateFilter, typeFilter, guardFilter]);
 
   const buildFilterParams = () => {
     const params = { page_size: 500 };
-    if (dateFilter) params.date = dateFilter;
+    if (startDateFilter) params.start_date = startDateFilter;
+    if (endDateFilter) params.end_date = endDateFilter;
     if (typeFilter !== 'all') params.log_type = typeFilter;
     if (guardFilter !== 'all') params.guard = guardFilter;
     return params;
@@ -106,8 +108,12 @@ const AdminReports = () => {
 
   const getActiveFilterLabel = () => {
     const guardName = guards.find((guard) => String(guard.id) === String(guardFilter));
+    const dateRangeLabel =
+      startDateFilter || endDateFilter
+        ? `${startDateFilter || 'Beginning'} to ${endDateFilter || 'Today'}`
+        : 'All dates';
     return {
-      date: dateFilter || 'All dates',
+      dateRange: dateRangeLabel,
       eventType: typeFilter === 'all' ? 'All event types' : typeFilter.replace(/_/g, ' '),
       guard: guardFilter === 'all'
         ? 'All guards'
@@ -296,15 +302,30 @@ const AdminReports = () => {
             <Filter className="w-5 h-5 text-gray-900 mr-3" />
             <h3 className="text-base font-black text-gray-900 uppercase tracking-wider">Filter Logs</h3>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div>
-              <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Date</label>
+              <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Start Date</label>
               <div className="relative">
                 <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-500" />
                 <input
                   type="date"
-                  value={dateFilter}
-                  onChange={(e) => setDateFilter(e.target.value)}
+                  value={startDateFilter}
+                  max={endDateFilter || undefined}
+                  onChange={(e) => setStartDateFilter(e.target.value)}
+                  className="w-full pl-10 pr-4 py-3 border-2 border-gray-900 font-bold text-gray-900 focus:ring-0 focus:border-brand-primary bg-gray-50 shadow-[2px_2px_0_0_rgba(0,0,0,1)]"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">End Date</label>
+              <div className="relative">
+                <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-500" />
+                <input
+                  type="date"
+                  value={endDateFilter}
+                  min={startDateFilter || undefined}
+                  onChange={(e) => setEndDateFilter(e.target.value)}
                   className="w-full pl-10 pr-4 py-3 border-2 border-gray-900 font-bold text-gray-900 focus:ring-0 focus:border-brand-primary bg-gray-50 shadow-[2px_2px_0_0_rgba(0,0,0,1)]"
                 />
               </div>
@@ -423,7 +444,7 @@ const AdminReports = () => {
         <h1 className="text-2xl font-black">GatePass Security Activity Report</h1>
         <p className="text-sm mt-1">Generated on {new Date().toLocaleString()}</p>
         <div className="mt-4 text-sm">
-          <p><strong>Date filter:</strong> {getActiveFilterLabel().date}</p>
+          <p><strong>Date range:</strong> {getActiveFilterLabel().dateRange}</p>
           <p><strong>Event type:</strong> {getActiveFilterLabel().eventType}</p>
           <p><strong>Guard:</strong> {getActiveFilterLabel().guard}</p>
         </div>
