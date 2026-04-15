@@ -76,8 +76,13 @@ const VehicleLogger = () => {
                 setDeclaredItems('');
             }, 2000);
 
-        } catch {
-            setError("Failed to create gate log.");
+        } catch (err) {
+            const apiError =
+                err?.response?.data?.log_type?.[0] ||
+                err?.response?.data?.non_field_errors?.[0] ||
+                err?.response?.data?.detail ||
+                "Failed to create gate log.";
+            setError(apiError);
         } finally {
             setLoading(false);
         }

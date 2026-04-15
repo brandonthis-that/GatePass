@@ -32,3 +32,39 @@ class GateLogSerializer(serializers.ModelSerializer):
             "declared_items",
         ]
         read_only_fields = ["timestamp", "guard"]
+
+    def validate(self, attrs):
+        log_type = attrs.get("log_type")
+        vehicle = attrs.get("vehicle")
+        plate_number_raw = (attrs.get("plate_number_raw") or "").strip().upper()
+
+        if log_type != "VEHICLE_ENTRY":
+            return attrs
+
+        last_log = None
+        if vehicle:
+            last_log = (
+                GateLog.objects.filter(vehicle=vehicle)
+                .order_by("-timestamp")
+                .first()
+            )
+        elif plate_number_raw:
+            last_log = (
+                GateLog.objects.filter(plate_number_raw__iexact=plate_number_raw)
+                .order_by("-timestamp")
+                .first()
+            )
+            attrs["plate_number_raw"] = plate_number_raw
+
+        if last_log and last_log.log_type == "VEHICLE_ENTRY":
+            raise serializers.ValidationError(
+                {
+                    "log_type": (
+                        "This vehicle is already logged IN (last entry at "
+                        f"{last_log.timestamp:%Y-%m-%d %H:%M:%S}). "
+                        "Log an exit first before adding another entry."
+                    )
+                }
+            )
+
+        return attrs
