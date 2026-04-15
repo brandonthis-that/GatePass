@@ -1,61 +1,142 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   ArrowLeft, 
   Printer,
   Calendar, 
   Filter, 
-  BarChart3, 
   FileText, 
-  TrendingUp,
   Users,
   Car,
   Package,
-  UserCheck,
-  Eye
+  UserCheck
 } from 'lucide-react';
 import api from '../../api/axios';
 
 const AdminReports = () => {
   const [logs, setLogs] = useState([]);
   const [reports, setReports] = useState(null);
+  const [guards, setGuards] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [filtering, setFiltering] = useState(false);
+  const [error, setError] = useState('');
   const [dateFilter, setDateFilter] = useState('');
   const [typeFilter, setTypeFilter] = useState('all');
   const [guardFilter, setGuardFilter] = useState('all');
-  const printRef = useRef(null);
 
   useEffect(() => {
-    fetchData();
+    fetchGuards();
   }, []);
 
+  // Filter changes should trigger a fresh query; this effect intentionally depends on filter values only.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
-    filterLogs();
+    fetchFilteredData();
   }, [dateFilter, typeFilter, guardFilter]);
 
-  const fetchData = async () => {
+  const buildFilterParams = () => {
+    const params = { page_size: 500 };
+    if (dateFilter) params.date = dateFilter;
+    if (typeFilter !== 'all') params.log_type = typeFilter;
+    if (guardFilter !== 'all') params.guard = guardFilter;
+    return params;
+  };
+
+  const fetchAllLogs = async (params) => {
+    let nextUrl = '/api/gate-logs/';
+    let requestParams = params;
+    const aggregated = [];
+
+    while (nextUrl) {
+      const response = await api.get(nextUrl, { params: requestParams });
+      const data = response.data;
+
+      if (Array.isArray(data)) {
+        return data;
+      }
+
+      aggregated.push(...(data.results || []));
+      nextUrl = data.next;
+      requestParams = undefined;
+    }
+
+    return aggregated;
+  };
+
+  const fetchGuards = async () => {
     try {
-      setLoading(true);
-      const [logsResponse, reportsResponse] = await Promise.all([
-        api.get('/api/gate-logs/'),
-        api.get('/api/gate-logs/reports/')
-      ]);
-      
-      setLogs(logsResponse.data.results || logsResponse.data);
-      setReports(reportsResponse.data);
-    } catch (error) {
-      console.error('Error fetching reports data:', error);
-    } finally {
-      setLoading(false);
+      const response = await api.get('/api/users/');
+      const users = response.data.results || response.data;
+      const guardUsers = users
+        .filter((user) => user.role === 'guard')
+        .sort((a, b) => `${a.first_name} ${a.last_name}`.localeCompare(`${b.first_name} ${b.last_name}`));
+      setGuards(guardUsers);
+    } catch (fetchError) {
+      console.error('Error fetching guards:', fetchError);
     }
   };
 
-  const filterLogs = () => {
-    // Client-side filtering or filtered API calls can be added here
+  const fetchFilteredData = async () => {
+    const params = buildFilterParams();
+    const isInitialLoad = loading;
+
+    try {
+      setError('');
+      if (isInitialLoad) {
+        setLoading(true);
+      } else {
+        setFiltering(true);
+      }
+
+      const [logsResponse, reportsResponse] = await Promise.all([
+        fetchAllLogs(params),
+        api.get('/api/gate-logs/reports/', { params })
+      ]);
+      
+      setLogs(logsResponse);
+      setReports(reportsResponse.data || { total_events: 0, breakdown: [] });
+    } catch (fetchError) {
+      console.error('Error fetching reports data:', fetchError);
+      setError('Unable to load report data. Please try again.');
+    } finally {
+      setLoading(false);
+      setFiltering(false);
+    }
+  };
+
+  const getActiveFilterLabel = () => {
+    const guardName = guards.find((guard) => String(guard.id) === String(guardFilter));
+    return {
+      date: dateFilter || 'All dates',
+      eventType: typeFilter === 'all' ? 'All event types' : typeFilter.replace(/_/g, ' '),
+      guard: guardFilter === 'all'
+        ? 'All guards'
+        : `${guardName?.first_name || ''} ${guardName?.last_name || ''}`.trim() || 'Selected guard',
+    };
   };
 
   const handlePrint = () => {
     window.print();
+  };
+
+  const getLogDetails = (log) => {
+    const details = [];
+    if (log.asset_type) {
+      details.push(`Asset: ${log.asset_type}${log.asset_serial ? ` (${log.asset_serial})` : ''}`);
+    }
+    if (log.plate_number) {
+      details.push(`Vehicle: ${log.plate_number}`);
+    }
+    if (log.student_name) {
+      details.push(`Student: ${log.student_name}`);
+    }
+    if (log.plate_number_raw) {
+      details.push(`Unregistered Plate: ${log.plate_number_raw}`);
+    }
+    if (log.driver_name) {
+      details.push(`Driver: ${log.driver_name}`);
+    }
+    return details.length ? details.join(' | ') : 'N/A';
   };
 
   const getLogTypeIcon = (type) => {
@@ -125,15 +206,22 @@ const AdminReports = () => {
           </div>
           <button
             onClick={handlePrint}
+            disabled={filtering}
             className="flex items-center justify-center px-6 py-3 border-2 border-gray-900 bg-white text-gray-900 font-bold uppercase tracking-wider shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:bg-gray-100 hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-y-[4px] active:shadow-none transition-all"
           >
             <Printer className="w-5 h-5 mr-2" />
-            Print Report
+            {filtering ? 'Refreshing...' : 'Print Report'}
           </button>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto p-6">
+      <div className="max-w-7xl mx-auto p-6 no-print">
+        {error && (
+          <div className="mb-6 border-2 border-red-700 bg-red-50 text-red-900 px-4 py-3 font-bold uppercase tracking-wide">
+            {error}
+          </div>
+        )}
+
         {/* Summary Cards */}
         {reports && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
@@ -189,11 +277,11 @@ const AdminReports = () => {
                     <div className="w-32 bg-gray-200 h-3 border-2 border-gray-900">
                       <div
                         className="bg-gray-900 h-full"
-                        style={{ width: `${(item.count / reports.total_events) * 100}%` }}
+                        style={{ width: `${reports.total_events ? (item.count / reports.total_events) * 100 : 0}%` }}
                       ></div>
                     </div>
                     <span className="text-sm font-black text-gray-900 w-10 text-right">
-                      {Math.round((item.count / reports.total_events) * 100)}%
+                      {reports.total_events ? Math.round((item.count / reports.total_events) * 100) : 0}%
                     </span>
                   </div>
                 </div>
@@ -247,6 +335,11 @@ const AdminReports = () => {
                 className="w-full px-4 py-3 border-2 border-gray-900 font-bold text-gray-900 focus:ring-0 focus:border-brand-primary bg-gray-50 shadow-[2px_2px_0_0_rgba(0,0,0,1)] uppercase"
               >
                 <option value="all">All Guards</option>
+                {guards.map((guard) => (
+                  <option key={guard.id} value={guard.id}>
+                    {`${guard.first_name} ${guard.last_name}`.trim() || guard.username}
+                  </option>
+                ))}
               </select>
             </div>
           </div>
@@ -255,7 +348,12 @@ const AdminReports = () => {
         {/* Gate Logs Table */}
         <div className="bg-white border-4 border-gray-900 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] overflow-hidden">
           <div className="px-6 py-5 border-b-4 border-gray-900 bg-gray-50">
-            <h2 className="text-xl font-display font-black text-gray-900 uppercase tracking-tight">Gate Activity Logs</h2>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+              <h2 className="text-xl font-display font-black text-gray-900 uppercase tracking-tight">Gate Activity Logs</h2>
+              <p className="text-xs font-black text-gray-600 uppercase tracking-widest">
+                Showing {logs.length} matching event{logs.length === 1 ? '' : 's'}
+              </p>
+            </div>
           </div>
 
           <div className="overflow-x-auto">
@@ -280,7 +378,7 @@ const AdminReports = () => {
                 </tr>
               </thead>
               <tbody className="divide-y-2 divide-gray-200">
-                {logs.slice(0, 50).map((log) => (
+                {logs.map((log) => (
                   <tr key={log.id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900 font-mono">
                       {new Date(log.timestamp).toLocaleString()}
@@ -296,14 +394,11 @@ const AdminReports = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-black text-gray-900 uppercase tracking-wide">
                       {log.guard_name || 'SYSTEM'}
                     </td>
-                    <td className="px-6 py-4 text-sm font-bold text-gray-700 max-w-xs truncate uppercase">
-                      {log.asset_type && `Asset: ${log.asset_type}`}
-                      {log.plate_number && `Vehicle: ${log.plate_number}`}
-                      {log.student_name && `Student: ${log.student_name}`}
-                      {log.plate_number_raw && `Unregistered: ${log.plate_number_raw}`}
+                    <td className="px-6 py-4 text-sm font-bold text-gray-700 max-w-xl uppercase">
+                      {getLogDetails(log)}
                     </td>
                     <td className="px-6 py-4 text-sm font-medium text-gray-500 max-w-xs truncate">
-                      {log.notes}
+                      {log.notes || '-'}
                     </td>
                   </tr>
                 ))}
@@ -321,6 +416,62 @@ const AdminReports = () => {
             </div>
           )}
         </div>
+      </div>
+
+      {/* Print-only report */}
+      <div className="print-only print-report px-8 py-6">
+        <h1 className="text-2xl font-black">GatePass Security Activity Report</h1>
+        <p className="text-sm mt-1">Generated on {new Date().toLocaleString()}</p>
+        <div className="mt-4 text-sm">
+          <p><strong>Date filter:</strong> {getActiveFilterLabel().date}</p>
+          <p><strong>Event type:</strong> {getActiveFilterLabel().eventType}</p>
+          <p><strong>Guard:</strong> {getActiveFilterLabel().guard}</p>
+        </div>
+        <div className="mt-4 text-sm">
+          <p><strong>Total matching events:</strong> {reports?.total_events || 0}</p>
+        </div>
+
+        <h2 className="text-lg font-bold mt-6 mb-2">Event Breakdown</h2>
+        <table className="w-full border-collapse text-xs">
+          <thead>
+            <tr>
+              <th className="border border-gray-400 p-2 text-left">Event Type</th>
+              <th className="border border-gray-400 p-2 text-left">Count</th>
+            </tr>
+          </thead>
+          <tbody>
+            {(reports?.breakdown || []).map((item) => (
+              <tr key={item.log_type}>
+                <td className="border border-gray-400 p-2">{item.log_type.replace(/_/g, ' ')}</td>
+                <td className="border border-gray-400 p-2">{item.count}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+
+        <h2 className="text-lg font-bold mt-6 mb-2">Detailed Logs</h2>
+        <table className="w-full border-collapse text-xs">
+          <thead>
+            <tr>
+              <th className="border border-gray-400 p-2 text-left">Timestamp</th>
+              <th className="border border-gray-400 p-2 text-left">Event Type</th>
+              <th className="border border-gray-400 p-2 text-left">Guard</th>
+              <th className="border border-gray-400 p-2 text-left">Details</th>
+              <th className="border border-gray-400 p-2 text-left">Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            {logs.map((log) => (
+              <tr key={`print-${log.id}`}>
+                <td className="border border-gray-400 p-2">{new Date(log.timestamp).toLocaleString()}</td>
+                <td className="border border-gray-400 p-2">{log.log_type.replace(/_/g, ' ')}</td>
+                <td className="border border-gray-400 p-2">{log.guard_name || 'SYSTEM'}</td>
+                <td className="border border-gray-400 p-2">{getLogDetails(log)}</td>
+                <td className="border border-gray-400 p-2">{log.notes || '-'}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   );
