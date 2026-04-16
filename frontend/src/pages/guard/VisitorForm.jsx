@@ -15,12 +15,14 @@ const VisitorForm = () => {
 
     const navigate = useNavigate();
 
-    const { register, handleSubmit, watch, formState: { errors, isSubmitting } } = useForm({
+    const { register, handleSubmit, watch, setValue, formState: { errors, isSubmitting } } = useForm({
         resolver: zodResolver(VisitorSchema),
         defaultValues: {
             name: '',
+            document_type: 'PASSPORT',
             national_id: '',
             phone: '',
+            phone_country: '+254',
             email: '',
             organization: '',
             purpose_category: 'MEETING',
@@ -28,6 +30,7 @@ const VisitorForm = () => {
             host_name: '',
             host_email: '',
             host_phone: '',
+            host_phone_country: '+254',
             department: '',
             office_location: '',
             expected_duration: 60,
@@ -49,12 +52,22 @@ const VisitorForm = () => {
         { value: 'OTHER', label: 'Other' },
     ];
 
+    const documentTypeOptions = [
+        { value: 'PASSPORT', label: 'Passport' },
+        { value: 'KENYA_NATIONAL_ID', label: 'Kenya National ID' },
+        { value: 'FOREIGN_ID', label: 'Foreign ID' },
+    ];
+
     const onSubmit = async (data) => {
         setGlobalError(null);
 
-        const submitData = { ...data };
-        if (submitData.phone) submitData.phone = phoneCountry + submitData.phone;
-        if (submitData.host_phone) submitData.host_phone = hostPhoneCountry + submitData.host_phone;
+        const submitData = {
+            ...data,
+            phone_country: phoneCountry,
+            host_phone_country: hostPhoneCountry,
+        };
+        if (submitData.phone) submitData.phone = submitData.phone.trim();
+        if (submitData.host_phone) submitData.host_phone = submitData.host_phone.trim();
         
         submitData.scheduled_time = null;
 
@@ -122,6 +135,8 @@ const VisitorForm = () => {
                     </div>
                 ) : (
                     <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+                        <input type="hidden" {...register('phone_country')} />
+                        <input type="hidden" {...register('host_phone_country')} />
                         <div className="flex flex-col items-center mb-8 border-b-2 border-gray-900 pb-8">
                             <div className="bg-brand-primary p-4 border-2 border-gray-900 mb-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
                                 <UserPlus className="w-8 h-8 text-white" />
@@ -155,7 +170,22 @@ const VisitorForm = () => {
                                 </div>
 
                                 <div>
-                                    <label className="block text-xs font-bold text-gray-900 mb-2 uppercase tracking-wider">National ID / Passport *</label>
+                                    <label className="block text-xs font-bold text-gray-900 mb-2 uppercase tracking-wider">Document Type *</label>
+                                    <select
+                                        {...register('document_type')}
+                                        className="gate-input"
+                                    >
+                                        {documentTypeOptions.map(option => (
+                                            <option key={option.value} value={option.value}>
+                                                {option.label}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    {errors.document_type && <p className="mt-2 text-xs font-bold text-red-600">{errors.document_type.message}</p>}
+                                </div>
+
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-900 mb-2 uppercase tracking-wider">Document Number *</label>
                                     <input
                                         type="text"
                                         {...register('national_id')}
@@ -173,7 +203,11 @@ const VisitorForm = () => {
                                     <div className="flex w-full border-2 border-gray-900 group-focus-within:border-brand-primary">
                                         <select 
                                             value={phoneCountry} 
-                                            onChange={(e) => setPhoneCountry(e.target.value)}
+                                            onChange={(e) => {
+                                                const value = e.target.value;
+                                                setPhoneCountry(value);
+                                                setValue('phone_country', value, { shouldValidate: true });
+                                            }}
                                             className="px-2 py-3 bg-gray-100 text-gray-900 font-bold focus:outline-none border-r-2 border-gray-900"
                                         >
                                             <option value="+254">+254</option>
@@ -300,7 +334,11 @@ const VisitorForm = () => {
                                     <div className="flex w-full border-2 border-gray-900 group-focus-within:border-brand-primary">
                                         <select 
                                             value={hostPhoneCountry} 
-                                            onChange={(e) => setHostPhoneCountry(e.target.value)}
+                                            onChange={(e) => {
+                                                const value = e.target.value;
+                                                setHostPhoneCountry(value);
+                                                setValue('host_phone_country', value, { shouldValidate: true });
+                                            }}
                                             className="px-2 py-3 bg-gray-100 text-gray-900 font-bold focus:outline-none border-r-2 border-gray-900"
                                         >
                                             <option value="+254">+254</option>
